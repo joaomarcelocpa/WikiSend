@@ -1,6 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import RegistrationForm from '../components/RegistrationForm';
 
 interface RegisterInformationProps {
@@ -11,10 +10,9 @@ interface RegisterInformationProps {
 
 const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformationProps) => {
     return (
-        <div className="min-h-screen" style={{
-            fontFamily: 'Inter, system-ui, sans-serif',
-            backgroundColor: darkMode ? '#0f0f0f' : '#f9fafb'
-        }}>
+        <div className={`min-h-screen font-sans ${
+            darkMode ? 'bg-[#0f0f0f]' : 'bg-gray-50'
+        }`}>
             <Navbar darkMode={darkMode} setDarkMode={setDarkMode} showUserInfo={false} />
 
             <div className="max-w-[900px] mx-auto px-8 py-12">
@@ -28,13 +26,12 @@ const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformat
                         <span className="font-medium">Voltar</span>
                     </button>
 
-                    <h1 className="text-4xl font-bold mb-3" style={{
-                        fontFamily: 'Poppins, sans-serif',
-                        color: darkMode ? '#fff' : '#155457'
-                    }}>
+                    <h1 className={`text-4xl font-bold mb-3 font-heading ${
+                        darkMode ? 'text-white' : 'text-max-data'
+                    }`}>
                         Cadastrar Nova Informação
                     </h1>
-                    <p className="text-lg" style={{ color: darkMode ? '#9ca3af' : '#6b7280' }}>
+                    <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         Preencha os campos abaixo para adicionar conteúdo à Wiki
                     </p>
                 </div>
@@ -42,7 +39,6 @@ const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformat
                 <RegistrationForm darkMode={darkMode} />
             </div>
 
-            <Footer darkMode={darkMode} />
         </div>
     );
 };
