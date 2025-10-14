@@ -1,52 +1,57 @@
+// src/components/LoginForm.tsx
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../shared/hooks/useAuth';
 
 interface LoginFormProps {
     darkMode: boolean;
     onLogin: () => void;
 }
 
-const LoginForm = ({ darkMode, onLogin }: LoginFormProps) => {
+const LoginForm = ({ darkMode }: LoginFormProps) => {
+    const { login, loading, error } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
+    const [localError, setLocalError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setLocalError('');
 
-        // Validação simples
         if (!email || !password) {
-            setError('Por favor, preencha todos os campos');
+            setLocalError('Por favor, preencha todos os campos');
             return;
         }
 
-        if (!email.includes('@')) {
-            setError('Por favor, insira um e-mail válido');
-            return;
+        const success = await login({ email, password });
+        if (!success) {
+            setLocalError(error || 'Erro ao efetuar login');
         }
-
-        // Aceita qualquer login válido
-        onLogin();
     };
 
     return (
-        <div className={`rounded-2xl border-2 p-8 ${
-            darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200 shadow-xl'
-        }`}>
+        <div
+            className={`rounded-2xl border-2 p-8 ${
+                darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200 shadow-xl'
+            }`}
+        >
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email */}
                 <div>
-                    <label className={`block text-sm font-bold mb-2 font-heading ${
-                        darkMode ? 'text-white' : 'text-max-data'
-                    }`}>
+                    <label
+                        className={`block text-sm font-bold mb-2 font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
+                        }`}
+                    >
                         E-mail
                     </label>
                     <div className="relative">
-                        <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                            darkMode ? 'text-gray-500' : 'text-gray-400'
-                        }`} />
+                        <Mail
+                            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+                                darkMode ? 'text-gray-500' : 'text-gray-400'
+                            }`}
+                        />
                         <input
                             type="email"
                             value={email}
@@ -63,15 +68,19 @@ const LoginForm = ({ darkMode, onLogin }: LoginFormProps) => {
 
                 {/* Senha */}
                 <div>
-                    <label className={`block text-sm font-bold mb-2 font-heading ${
-                        darkMode ? 'text-white' : 'text-max-data'
-                    }`}>
+                    <label
+                        className={`block text-sm font-bold mb-2 font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
+                        }`}
+                    >
                         Senha
                     </label>
                     <div className="relative">
-                        <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                            darkMode ? 'text-gray-500' : 'text-gray-400'
-                        }`} />
+                        <Lock
+                            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+                                darkMode ? 'text-gray-500' : 'text-gray-400'
+                            }`}
+                        />
                         <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -87,7 +96,9 @@ const LoginForm = ({ darkMode, onLogin }: LoginFormProps) => {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                                darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                                darkMode
+                                    ? 'text-gray-500 hover:text-gray-300'
+                                    : 'text-gray-400 hover:text-gray-600'
                             }`}
                         >
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -96,20 +107,21 @@ const LoginForm = ({ darkMode, onLogin }: LoginFormProps) => {
                 </div>
 
                 {/* Mensagem de Erro */}
-                {error && (
+                {(localError || error) && (
                     <div className="bg-red-500/10 border-2 border-red-500/50 rounded-xl p-3">
                         <p className="text-red-500 text-sm text-center font-medium">
-                            {error}
+                            {localError || error}
                         </p>
                     </div>
                 )}
 
-                {/* Botão de Login */}
+                {/* Botão */}
                 <button
                     type="submit"
-                    className="w-full py-3 rounded-xl font-bold text-base transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white"
+                    disabled={loading}
+                    className="w-full py-3 rounded-xl font-bold text-base transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white disabled:opacity-70"
                 >
-                    Entrar
+                    {loading ? 'Entrando...' : 'Entrar'}
                 </button>
             </form>
         </div>

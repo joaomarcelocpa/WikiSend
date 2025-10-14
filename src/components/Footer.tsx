@@ -4,7 +4,7 @@ interface FooterProps {
 
 const Footer = ({ darkMode }: FooterProps) => {
     return (
-        <footer className={`border-t mt-20 font-sans ${
+        <footer className={`border mt-20 font-sans ${
             darkMode ? 'bg-[#1a1a1a] border-gray-800' : 'bg-white border-gray-100'
         }`}>
             <div className="w-full px-8 py-8">

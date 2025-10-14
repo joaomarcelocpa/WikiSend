@@ -3,34 +3,22 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import RegisterInformation from './pages/RegisterInformation';
 import EditInformation from './pages/EditInformation';
+import { AuthProvider } from './shared/contexts/AuthContext';
+import { useAuth } from './shared/hooks/useAuth';
 
 type Page = 'home' | 'register' | 'edit';
 
-function App() {
+function AppContent() {
     const [darkMode, setDarkMode] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [currentPage, setCurrentPage] = useState<Page>('home');
+    const { isAuthenticated } = useAuth();
 
-    const handleLogin = () => {
-        setIsAuthenticated(true);
-    };
+    const handleNavigate = (page: string) => setCurrentPage(page as Page);
 
-    const handleNavigate = (page: string) => {
-        setCurrentPage(page as Page);
-    };
-
-    // Se não estiver autenticado, mostra a tela de login
     if (!isAuthenticated) {
-        return (
-            <Login
-                darkMode={darkMode}
-                setDarkMode={setDarkMode}
-                onLogin={handleLogin}
-            />
-        );
+        return <Login darkMode={darkMode} setDarkMode={setDarkMode} />;
     }
 
-    // Após login, gerencia as páginas internas
     if (currentPage === 'edit') {
         return (
             <EditInformation
@@ -57,6 +45,14 @@ function App() {
             setDarkMode={setDarkMode}
             onNavigate={handleNavigate}
         />
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
 }
 

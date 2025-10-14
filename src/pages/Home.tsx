@@ -1,5 +1,6 @@
 import { FileText, Tag, BookOpen, Users, Edit } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from "../components/Footer.tsx";
 
 interface HomeProps {
     darkMode: boolean;
@@ -104,6 +105,7 @@ const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
                     </button>
                 </div>
             </div>
+            <Footer darkMode={darkMode} />
         </div>
     );
 };
