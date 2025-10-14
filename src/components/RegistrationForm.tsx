@@ -1,36 +1,34 @@
 import { useState } from 'react';
-import { Save } from 'lucide-react';
+import { Save, ArrowLeft, Upload, X } from 'lucide-react';
 
 type Section = 'general' | 'sms' | 'backoffice';
 
 interface FormData {
     section: Section;
     category: string;
-    subcategory: string;
-    question: string;
+    subtopic: string;
     answer: string;
-    tags: string[];
+    files: File[];
 }
 
 interface RegistrationFormProps {
     darkMode: boolean;
+    onBack: () => void;
 }
 
-const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
-    const [currentTag, setCurrentTag] = useState('');
+const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
     const [formData, setFormData] = useState<FormData>({
         section: 'general',
         category: '',
-        subcategory: '',
-        question: '',
+        subtopic: '',
         answer: '',
-        tags: [],
+        files: [],
     });
 
     const sections = [
-        { id: 'general' as Section, label: 'Dúvidas Gerais', colorClass: 'bg-max-data border-max-data', inactiveColorClass: 'text-gray-500' },
-        { id: 'sms' as Section, label: 'SMS', colorClass: 'bg-high-data border-high-data', inactiveColorClass: 'text-gray-500' },
-        { id: 'backoffice' as Section, label: 'Backoffice', colorClass: 'bg-mid-data border-mid-data', inactiveColorClass: 'text-gray-500' },
+        { id: 'sms' as Section, label: 'SMS', colorClass: 'bg-high-data border-high-data' },
+        { id: 'backoffice' as Section, label: 'Backoffice', colorClass: 'bg-high-data border-mid-data' },
+        { id: 'general' as Section, label: 'Dúvidas Gerais', colorClass: 'bg-high-data border-max-data' },
     ];
 
     const smsCategories = [
@@ -43,19 +41,30 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
         'Mensageria', 'Monitoramento', 'Usuários Backoffice', 'FAQ'
     ];
 
-    const handleAddTag = () => {
-        if (currentTag.trim() && !formData.tags.includes(currentTag.trim())) {
-            setFormData({ ...formData, tags: [...formData.tags, currentTag.trim()] });
-            setCurrentTag('');
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = e.target.files;
+        if (selectedFiles) {
+            const filesArray = Array.from(selectedFiles);
+            const validFiles = filesArray.filter(file =>
+                file.type === 'application/pdf' ||
+                file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                file.type === 'application/msword'
+            );
+
+            if (validFiles.length !== filesArray.length) {
+                alert('Apenas arquivos PDF e DOCX são permitidos');
+            }
+
+            setFormData({ ...formData, files: [...formData.files, ...validFiles] });
         }
     };
 
-    const handleRemoveTag = (tagToRemove: string) => {
-        setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) });
+    const handleRemoveFile = (index: number) => {
+        setFormData({ ...formData, files: formData.files.filter((_, i) => i !== index) });
     };
 
     const handleSubmit = () => {
-        if (!formData.question || !formData.answer) {
+        if (!formData.subtopic || !formData.answer) {
             alert('Por favor, preencha os campos obrigatórios');
             return;
         }
@@ -130,19 +139,19 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                         </div>
                     )}
 
-                    {/* Subcategory */}
+                    {/* Subtopic/Question */}
                     <div className={`rounded-xl border-2 p-4 ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                     }`}>
                         <span className={`text-xs font-bold mb-2 block font-heading ${
                             darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            Subtópico (Opcional)
+                            Subtópico/Pergunta *
                         </span>
                         <input
                             type="text"
-                            value={formData.subcategory}
-                            onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                            value={formData.subtopic}
+                            onChange={(e) => setFormData({ ...formData, subtopic: e.target.value })}
                             placeholder="Ex: Como criar uma campanha"
                             className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
                                 darkMode
@@ -152,73 +161,79 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                         />
                     </div>
 
-                    {/* Question */}
+                    {/* File Upload */}
                     <div className={`rounded-xl border-2 p-4 ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                     }`}>
                         <span className={`text-xs font-bold mb-2 block font-heading ${
                             darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            Pergunta/Título *
+                            Arquivos (Opcional)
                         </span>
-                        <input
-                            type="text"
-                            value={formData.question}
-                            onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                            placeholder="Digite a pergunta ou título do conteúdo"
-                            className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
-                                darkMode
-                                    ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500'
-                                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
-                            }`}
-                        />
-                    </div>
-
-                    {/* Tags */}
-                    <div className={`rounded-xl border-2 p-4 ${
-                        darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
-                    }`}>
-                        <span className={`text-xs font-bold mb-2 block font-heading ${
-                            darkMode ? 'text-white' : 'text-max-data'
+                        <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                            darkMode
+                                ? 'border-gray-700 hover:border-gray-600'
+                                : 'border-gray-300 hover:border-gray-400'
                         }`}>
-                            Tags (Opcional)
-                        </span>
-                        <div className="flex gap-2 mb-2">
                             <input
-                                type="text"
-                                value={currentTag}
-                                onChange={(e) => setCurrentTag(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                                placeholder="Digite uma tag e pressione Enter"
-                                className={`flex-1 p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
-                                    darkMode
-                                        ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500'
-                                        : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
-                                }`}
+                                type="file"
+                                id="file-upload"
+                                multiple
+                                accept=".pdf,.doc,.docx"
+                                onChange={handleFileChange}
+                                className="hidden"
                             />
-                            <button
-                                onClick={handleAddTag}
-                                className="px-4 py-2 text-sm rounded-lg font-medium transition-all hover:opacity-90 bg-mid-data text-white"
+                            <label
+                                htmlFor="file-upload"
+                                className="cursor-pointer flex flex-col items-center gap-2"
                             >
-                                +
-                            </button>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                            {formData.tags.map((tag) => (
-                                <span
-                                    key={tag}
-                                    className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1.5 bg-mid-data/10 text-max-data"
-                                >
-                                    {tag}
-                                    <button
-                                        onClick={() => handleRemoveTag(tag)}
-                                        className="hover:text-red-500 transition-colors text-base leading-none"
-                                    >
-                                        ×
-                                    </button>
+                                <Upload className={`w-8 h-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    Clique ou arraste arquivos
                                 </span>
-                            ))}
+                                <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                    PDF ou DOCX (máx 10MB)
+                                </span>
+                            </label>
                         </div>
+
+                        {/* Lista de arquivos */}
+                        {formData.files.length > 0 && (
+                            <div className="mt-3 space-y-2">
+                                {formData.files.map((file, index) => (
+                                    <div
+                                        key={index}
+                                        className={`flex items-center justify-between p-2 rounded-lg ${
+                                            darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <div className="w-8 h-8 rounded flex items-center justify-center bg-mid-data/10 flex-shrink-0">
+                                                <span className="text-xs font-bold text-mid-data">
+                                                    {file.name.split('.').pop()?.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-xs font-medium truncate ${
+                                                    darkMode ? 'text-white' : 'text-gray-900'
+                                                }`}>
+                                                    {file.name}
+                                                </p>
+                                                <p className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleRemoveFile(index)}
+                                            className="p-1 hover:bg-red-500/10 rounded transition-colors flex-shrink-0"
+                                        >
+                                            <X className="w-4 h-4 text-red-500" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -244,14 +259,24 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                 </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-                onClick={handleSubmit}
-                className="w-full p-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-gradient-to-br from-max-data to-mid-data text-white"
-            >
-                <Save className="w-5 h-5" />
-                Salvar Informação
-            </button>
+            {/* Action Buttons */}
+            <div className="flex justify-between items-center">
+                <button
+                    onClick={onBack}
+                    className="flex items-center text-mid-data hover:text-high-data transition-colors font-medium"
+                >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Voltar
+                </button>
+
+                <button
+                    onClick={handleSubmit}
+                    className="px-8 py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white"
+                >
+                    <Save className="w-5 h-5" />
+                    Salvar Informação
+                </button>
+            </div>
         </div>
     );
 };

@@ -1,5 +1,5 @@
-import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import RegistrationForm from '../components/RegistrationForm';
 
 interface RegisterInformationProps {
@@ -15,30 +15,23 @@ const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformat
         }`}>
             <Navbar darkMode={darkMode} setDarkMode={setDarkMode} showUserInfo={false} />
 
-            <div className="max-w-[900px] mx-auto px-8 py-12">
+            <div className="max-w-[1400px] mx-auto px-8 py-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <button
-                        onClick={onBack}
-                        className="flex items-center mb-6 text-mid-data hover:text-high-data transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5 mr-2" />
-                        <span className="font-medium">Voltar</span>
-                    </button>
-
-                    <h1 className={`text-4xl font-bold mb-3 font-heading ${
+                <div className="mb-6">
+                    <h1 className={`text-3xl font-bold mb-3 font-heading ${
                         darkMode ? 'text-white' : 'text-max-data'
                     }`}>
                         Cadastrar Nova Informação
                     </h1>
-                    <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         Preencha os campos abaixo para adicionar conteúdo à Wiki
                     </p>
                 </div>
 
-                <RegistrationForm darkMode={darkMode} />
+                <RegistrationForm darkMode={darkMode} onBack={onBack} />
             </div>
 
+            <Footer darkMode={darkMode} />
         </div>
     );
 };
