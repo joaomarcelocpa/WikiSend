@@ -16,17 +16,26 @@ const AuthContext = createContext<AuthContextData | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<LoginResponse['user'] | null>(null);
     const [token, setToken] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Inicia como true
     const [error, setError] = useState<string | null>(null);
 
-    // 🔁 Restaura o login salvo
     useEffect(() => {
         const savedToken = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
-        if (savedToken) {
-            setToken(savedToken);
-            if (savedUser) setUser(JSON.parse(savedUser));
+
+        if (savedToken && savedUser) {
+            try {
+                setToken(savedToken);
+                setUser(JSON.parse(savedUser));
+            } catch (err) {
+                console.error('Erro ao restaurar sessão:', err);
+                // Limpa dados corrompidos
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
         }
+
+        setLoading(false);
     }, []);
 
     async function login(credentials: LoginRequest): Promise<boolean> {

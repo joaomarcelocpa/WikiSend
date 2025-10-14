@@ -1,14 +1,16 @@
 import { FileText, Tag, BookOpen, Users, Edit } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from "../components/Footer.tsx";
 
 interface HomeProps {
     darkMode: boolean;
     setDarkMode: (value: boolean) => void;
-    onNavigate: (page: string) => void;
 }
 
-const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
+const Home = ({ darkMode, setDarkMode }: HomeProps) => {
+    const navigate = useNavigate();
+
     const stats = [
         { label: 'Total de Artigos', value: '128', colorClass: 'text-max-data', bgClass: 'bg-max-data/10', icon: FileText },
         { label: 'Categorias', value: '24', colorClass: 'text-high-data', bgClass: 'bg-high-data/10', icon: BookOpen },
@@ -23,7 +25,6 @@ const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
             <Navbar darkMode={darkMode} setDarkMode={setDarkMode} showUserInfo={true} />
 
             <div className="max-w-[1200px] mx-auto px-8 py-12">
-                {/* Header */}
                 <div className="mb-12">
                     <h1 className={`text-5xl font-bold mb-3 font-heading ${
                         darkMode ? 'text-white' : 'text-max-data'
@@ -35,7 +36,6 @@ const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
                     </p>
                 </div>
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     {stats.map((stat, index) => {
                         const Icon = stat.icon;
@@ -64,10 +64,9 @@ const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
                     })}
                 </div>
 
-                {/* Action Buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <button
-                        onClick={() => onNavigate('register')}
+                        onClick={() => navigate('/register')}
                         className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-high-data"
                     >
                         <div className="flex items-center justify-between mb-4">
@@ -84,7 +83,7 @@ const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
                     </button>
 
                     <button
-                        onClick={() => onNavigate('edit')}
+                        onClick={() => navigate('/edit')}
                         className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-low-data"
                     >
                         <div className="flex items-center justify-between mb-4">

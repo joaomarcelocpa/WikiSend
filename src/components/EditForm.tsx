@@ -1,4 +1,6 @@
+// src/components/EditForm.tsx
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Save, Upload, X } from 'lucide-react';
 
 type Section = 'general' | 'sms' | 'backoffice';
@@ -13,11 +15,11 @@ interface FormData {
 
 interface EditFormProps {
     darkMode: boolean;
-    onBack: () => void;
     editingId: string;
 }
 
-const EditForm = ({ darkMode, onBack, editingId }: EditFormProps) => {
+const EditForm = ({ darkMode, editingId }: EditFormProps) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
         section: 'general',
         category: '',
@@ -111,7 +113,7 @@ const EditForm = ({ darkMode, onBack, editingId }: EditFormProps) => {
         }
         console.log('Form updated:', formData);
         alert('Informação atualizada com sucesso!');
-        onBack();
+        navigate('/edit');
     };
 
     const getCategories = () => {
@@ -305,7 +307,7 @@ const EditForm = ({ darkMode, onBack, editingId }: EditFormProps) => {
             <div className="flex justify-between items-center">
                 <div className="flex justify-start">
                     <button
-                        onClick={onBack}
+                        onClick={() => navigate('/edit')}
                         className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white"
                     >
                         Voltar

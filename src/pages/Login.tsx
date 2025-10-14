@@ -1,7 +1,8 @@
-// src/pages/Login.tsx
 import { Sun, Moon } from 'lucide-react';
-import LoginForm from '../components/LoginForm';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LoginForm from '../components/LoginForm';
+import { useAuth } from '../shared/hooks/useAuth';
 
 interface LoginProps {
     darkMode: boolean;
@@ -9,11 +10,30 @@ interface LoginProps {
 }
 
 const Login = ({ darkMode, setDarkMode }: LoginProps) => {
-    const router = useNavigate();
+    const navigate = useNavigate();
+    const { isAuthenticated, loading } = useAuth();
 
-    const handleLoginSuccess = () => {
-        router('/dashboard'); // exemplo: redireciona para o painel
-    };
+    useEffect(() => {
+        if (!loading && isAuthenticated) {
+            console.log('Usuário já autenticado, redirecionando para home...');
+            navigate('/', { replace: true });
+        }
+    }, [isAuthenticated, loading, navigate]);
+
+    if (loading) {
+        return (
+            <div className={`min-h-screen flex items-center justify-center font-sans ${
+                darkMode ? 'bg-[#0f0f0f]' : 'bg-gray-50'
+            }`}>
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mid-data mx-auto"></div>
+                    <p className={`mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Verificando autenticação...
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div
@@ -50,7 +70,7 @@ const Login = ({ darkMode, setDarkMode }: LoginProps) => {
                 </div>
 
                 {/* Formulário */}
-                <LoginForm darkMode={darkMode} onLogin={handleLoginSuccess} />
+                <LoginForm darkMode={darkMode} />
             </div>
         </div>
     );

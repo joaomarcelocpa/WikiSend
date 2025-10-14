@@ -1,15 +1,13 @@
-// src/components/LoginForm.tsx
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../shared/hooks/useAuth';
 
 interface LoginFormProps {
     darkMode: boolean;
-    onLogin: () => void;
 }
 
 const LoginForm = ({ darkMode }: LoginFormProps) => {
-    const { login, loading, error } = useAuth();
+    const { loading, error } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +15,11 @@ const LoginForm = ({ darkMode }: LoginFormProps) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (loading) {
+            return;
+        }
+
         setLocalError('');
 
         if (!email || !password) {
@@ -24,10 +27,6 @@ const LoginForm = ({ darkMode }: LoginFormProps) => {
             return;
         }
 
-        const success = await login({ email, password });
-        if (!success) {
-            setLocalError(error || 'Erro ao efetuar login');
-        }
     };
 
     return (
@@ -56,11 +55,12 @@ const LoginForm = ({ darkMode }: LoginFormProps) => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={loading}
                             placeholder="seu@email.com"
                             className={`w-full pl-11 pr-4 py-3 rounded-xl border-2 outline-none transition-colors ${
                                 darkMode
-                                    ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-mid-data'
-                                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-mid-data'
+                                    ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-mid-data disabled:opacity-50'
+                                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-mid-data disabled:opacity-50'
                             }`}
                         />
                     </div>
@@ -85,20 +85,22 @@ const LoginForm = ({ darkMode }: LoginFormProps) => {
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            disabled={loading}
                             placeholder="••••••••"
                             className={`w-full pl-11 pr-12 py-3 rounded-xl border-2 outline-none transition-colors ${
                                 darkMode
-                                    ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-mid-data'
-                                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-mid-data'
+                                    ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500 focus:border-mid-data disabled:opacity-50'
+                                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-mid-data disabled:opacity-50'
                             }`}
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
+                            disabled={loading}
                             className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
                                 darkMode
-                                    ? 'text-gray-500 hover:text-gray-300'
-                                    : 'text-gray-400 hover:text-gray-600'
+                                    ? 'text-gray-500 hover:text-gray-300 disabled:opacity-50'
+                                    : 'text-gray-400 hover:text-gray-600 disabled:opacity-50'
                             }`}
                         >
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -119,7 +121,7 @@ const LoginForm = ({ darkMode }: LoginFormProps) => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 rounded-xl font-bold text-base transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white disabled:opacity-70"
+                    className="w-full py-3 rounded-xl font-bold text-base transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loading ? 'Entrando...' : 'Entrar'}
                 </button>

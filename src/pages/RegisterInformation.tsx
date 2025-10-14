@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import RegistrationForm from '../components/RegistrationForm';
@@ -5,11 +6,11 @@ import RegistrationForm from '../components/RegistrationForm';
 interface RegisterInformationProps {
     darkMode: boolean;
     setDarkMode: (value: boolean) => void;
-    onBack: () => void;
-    editingId?: string | null;
 }
 
-const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformationProps) => {
+const RegisterInformation = ({ darkMode, setDarkMode }: RegisterInformationProps) => {
+    const navigate = useNavigate();
+
     return (
         <div className={`min-h-screen font-sans ${
             darkMode ? 'bg-[#0f0f0f]' : 'bg-gray-50'
@@ -17,7 +18,6 @@ const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformat
             <Navbar darkMode={darkMode} setDarkMode={setDarkMode} showUserInfo={false} />
 
             <div className="max-w-[1400px] mx-auto px-8 py-8">
-                {/* Header */}
                 <div className="mb-6">
                     <h1 className={`text-3xl font-bold mb-3 font-heading ${
                         darkMode ? 'text-white' : 'text-max-data'
@@ -29,7 +29,7 @@ const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformat
                     </p>
                 </div>
 
-                <RegistrationForm darkMode={darkMode} onBack={onBack} />
+                <RegistrationForm darkMode={darkMode} onBack={() => navigate('/')} />
             </div>
 
             <Footer darkMode={darkMode} />

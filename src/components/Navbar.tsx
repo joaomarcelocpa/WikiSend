@@ -1,4 +1,6 @@
+// src/components/Navbar.tsx
 import { Sun, Moon, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
 
 interface NavbarProps {
@@ -8,7 +10,13 @@ interface NavbarProps {
 }
 
 const Navbar = ({ darkMode, setDarkMode, showUserInfo = true }: NavbarProps) => {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login', { replace: true });
+    };
 
     return (
         <nav
@@ -18,14 +26,17 @@ const Navbar = ({ darkMode, setDarkMode, showUserInfo = true }: NavbarProps) => 
         >
             <div className="w-full px-8">
                 <div className="flex items-center justify-between h-16">
-                    {/* Logo */}
-                    <div className="flex items-center space-x-3">
+                    {/* Logo - clicável para voltar ao home */}
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+                    >
                         <img
                             src="/wiki-logo.png"
                             alt="WIKI SEND Logo"
                             className="h-8 w-auto"
                         />
-                    </div>
+                    </button>
 
                     {/* Ações */}
                     <div className="flex items-center space-x-4">
@@ -53,19 +64,19 @@ const Navbar = ({ darkMode, setDarkMode, showUserInfo = true }: NavbarProps) => 
                                 }`}
                             >
                                 <div className="w-8 h-8 rounded-full bg-mid-data flex items-center justify-center text-white text-sm font-semibold mr-2">
-                                    A
+                                    {user?.name?.charAt(0).toUpperCase()}
                                 </div>
                                 <span
                                     className={`text-sm font-medium ${
                                         darkMode ? 'text-white' : 'text-gray-900'
                                     }`}
                                 >
-                                    Admin
+                                    {user?.name || 'Admin'}
                                 </span>
 
                                 {/* Botão de Logout */}
                                 <button
-                                    onClick={logout}
+                                    onClick={handleLogout}
                                     title="Sair"
                                     className={`ml-3 p-2 rounded-lg transition-colors ${
                                         darkMode

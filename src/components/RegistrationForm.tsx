@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Save, Upload, X } from 'lucide-react';
 
-type Section =  'sms' | 'backoffice' | 'general';
+type Section = 'sms' | 'backoffice' | 'general';
 
 interface FormData {
     section: Section;
@@ -13,10 +14,11 @@ interface FormData {
 
 interface RegistrationFormProps {
     darkMode: boolean;
-    onBack: () => void;
+    onBack?: () => void;
 }
 
-const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
+const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
         section: 'sms',
         category: '',
@@ -70,6 +72,8 @@ const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
         }
         console.log('Form submitted:', formData);
         alert('Informação cadastrada com sucesso!');
+        // Redireciona para home após salvar
+        navigate('/');
     };
 
     const getCategories = () => {
@@ -263,7 +267,7 @@ const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
             <div className="flex justify-between items-center">
                 <div className="flex justify-start">
                     <button
-                        onClick={onBack}
+                        onClick={() => navigate('/')}
                         className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white"
                     >
                         Voltar

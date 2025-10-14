@@ -1,5 +1,6 @@
 import { Search, Edit, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import EditForm from '../components/EditForm';
@@ -17,15 +18,14 @@ interface Information {
 interface EditInformationProps {
     darkMode: boolean;
     setDarkMode: (value: boolean) => void;
-    onBack: () => void;
 }
 
-const EditInformation = ({ darkMode, setDarkMode, onBack }: EditInformationProps) => {
+const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSection, setSelectedSection] = useState<string>('all');
     const [editingId, setEditingId] = useState<string | null>(null);
 
-    // Dados mockados - substitua por dados reais da API
     const mockData: Information[] = [
         {
             id: '1',
@@ -96,11 +96,6 @@ const EditInformation = ({ darkMode, setDarkMode, onBack }: EditInformationProps
         setEditingId(id);
     };
 
-    const handleBackFromEdit = () => {
-        setEditingId(null);
-    };
-
-    // Se está editando, mostra o formulário
     if (editingId) {
         return (
             <div className={`min-h-screen font-sans ${
@@ -120,7 +115,7 @@ const EditInformation = ({ darkMode, setDarkMode, onBack }: EditInformationProps
                         </p>
                     </div>
 
-                    <EditForm darkMode={darkMode} onBack={handleBackFromEdit} editingId={editingId} />
+                    <EditForm darkMode={darkMode} editingId={editingId} />
                 </div>
 
                 <Footer darkMode={darkMode} />
@@ -273,7 +268,7 @@ const EditInformation = ({ darkMode, setDarkMode, onBack }: EditInformationProps
                 {/* Back Button */}
                 <div className="flex justify-start">
                     <button
-                        onClick={onBack}
+                        onClick={() => navigate('/')}
                         className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white"
                     >
                         Voltar
