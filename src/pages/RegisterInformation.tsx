@@ -6,6 +6,7 @@ interface RegisterInformationProps {
     darkMode: boolean;
     setDarkMode: (value: boolean) => void;
     onBack: () => void;
+    editingId?: string | null;
 }
 
 const RegisterInformation = ({ darkMode, setDarkMode, onBack }: RegisterInformationProps) => {

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Upload, X } from 'lucide-react';
 
-type Section =  'sms' | 'backoffice' | 'general';
+type Section = 'general' | 'sms' | 'backoffice';
 
 interface FormData {
     section: Section;
@@ -11,14 +11,15 @@ interface FormData {
     files: File[];
 }
 
-interface RegistrationFormProps {
+interface EditFormProps {
     darkMode: boolean;
     onBack: () => void;
+    editingId: string;
 }
 
-const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
+const EditForm = ({ darkMode, onBack, editingId }: EditFormProps) => {
     const [formData, setFormData] = useState<FormData>({
-        section: 'sms',
+        section: 'general',
         category: '',
         subtopic: '',
         answer: '',
@@ -26,9 +27,9 @@ const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
     });
 
     const sections = [
+        { id: 'general' as Section, label: 'Dúvidas Gerais', colorClass: 'bg-max-data border-max-data' },
         { id: 'sms' as Section, label: 'SMS', colorClass: 'bg-high-data border-high-data' },
-        { id: 'backoffice' as Section, label: 'Backoffice', colorClass: 'bg-high-data border-high-data' },
-        { id: 'general' as Section, label: 'Dúvidas Gerais', colorClass: 'bg-high-data border-high-data' },
+        { id: 'backoffice' as Section, label: 'Backoffice', colorClass: 'bg-mid-data border-mid-data' },
     ];
 
     const smsCategories = [
@@ -40,6 +41,46 @@ const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
         'Operacional', 'Financeiro', 'Empresas', 'Fornecedores',
         'Mensageria', 'Monitoramento', 'Usuários Backoffice', 'FAQ'
     ];
+
+    // Carregar dados ao montar o componente
+    useEffect(() => {
+        // Dados mockados - substitua por chamada à API
+        const mockData: Record<string, FormData> = {
+            '1': {
+                section: 'sms',
+                category: 'Campanhas',
+                subtopic: 'Como criar uma campanha',
+                answer: 'Para criar uma campanha, acesse o menu Campanhas no sistema SMS e clique em "Nova Campanha". Preencha os campos obrigatórios como nome da campanha, público-alvo e conteúdo da mensagem.',
+                files: []
+            },
+            '2': {
+                section: 'backoffice',
+                category: 'Financeiro',
+                subtopic: 'Como gerar relatório mensal',
+                answer: 'Para gerar o relatório mensal, acesse o menu Relatórios > Financeiro. Selecione o mês desejado e clique em "Gerar Relatório". O arquivo será gerado em formato PDF.',
+                files: []
+            },
+            '3': {
+                section: 'general',
+                category: '',
+                subtopic: 'Como recuperar senha',
+                answer: 'Para recuperar sua senha, clique em "Esqueci minha senha" na tela de login. Informe seu e-mail cadastrado e siga as instruções enviadas.',
+                files: []
+            },
+            '4': {
+                section: 'sms',
+                category: 'Blacklist',
+                subtopic: 'Como adicionar número na blacklist',
+                answer: 'Para adicionar um número na blacklist, acesse o menu Blacklist, clique em "Adicionar Número" e informe o DDD e número do telefone.',
+                files: []
+            },
+        };
+
+        const data = mockData[editingId];
+        if (data) {
+            setFormData(data);
+        }
+    }, [editingId]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files;
@@ -68,8 +109,9 @@ const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
             alert('Por favor, preencha os campos obrigatórios');
             return;
         }
-        console.log('Form submitted:', formData);
-        alert('Informação cadastrada com sucesso!');
+        console.log('Form updated:', formData);
+        alert('Informação atualizada com sucesso!');
+        onBack();
     };
 
     const getCategories = () => {
@@ -275,11 +317,11 @@ const RegistrationForm = ({ darkMode, onBack }: RegistrationFormProps) => {
                     className="px-8 py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white"
                 >
                     <Save className="w-5 h-5" />
-                    Salvar Informação
+                    Atualizar Informação
                 </button>
             </div>
         </div>
     );
 };
 
-export default RegistrationForm;
+export default EditForm;

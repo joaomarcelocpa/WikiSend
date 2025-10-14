@@ -1,4 +1,4 @@
-import { FileText, Tag, BookOpen, Users } from 'lucide-react';
+import { FileText, Tag, BookOpen, Users, Edit } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
 interface HomeProps {
@@ -70,10 +70,9 @@ const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
                         className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-high-data"
                     >
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-white/20">
+                            <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-high-data">
                                 <FileText className="w-7 h-7 text-white" />
                             </div>
-                            <div className="text-white/60 text-sm">Novo</div>
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2 font-heading">
                             Cadastrar Informação
@@ -84,27 +83,23 @@ const Home = ({ darkMode, setDarkMode, onNavigate }: HomeProps) => {
                     </button>
 
                     <button
-                        className={`group relative p-8 rounded-2xl border-2 text-left transition-all hover:shadow-xl ${
-                            darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
-                        }`}
+                        onClick={() => onNavigate('edit')}
+                        className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-low-data"
                     >
                         <div className="flex items-center justify-between mb-4">
                             <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                                darkMode ? 'bg-gray-800' : 'bg-gray-100'
+                                darkMode ? 'bg-low-data' : 'bg-low-data'
                             }`}>
-                                <BookOpen className="w-7 h-7 text-mid-data" />
-                            </div>
-                            <div className={`text-sm ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                Em breve
+                                <Edit className="w-7 h-7 text-max-data" />
                             </div>
                         </div>
                         <h3 className={`text-2xl font-bold mb-2 font-heading ${
                             darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            Gerenciar Artigos
+                            Editar Informação
                         </h3>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Edite e organize o conteúdo existente
+                        <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+                            Busque e edite o conteúdo existente
                         </p>
                     </button>
                 </div>
