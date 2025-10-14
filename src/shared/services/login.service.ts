@@ -33,3 +33,19 @@ export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
         throw new Error(error.message || 'Erro na conexão com o servidor');
     }
 }
+
+export function saveAuthToken(token: string): void {
+    localStorage.setItem('token', token);
+}
+
+export function getAuthToken(): string | null {
+    return localStorage.getItem('token');
+}
+
+export function removeAuthToken(): void {
+    localStorage.removeItem('token');
+}
+
+export function isAuthenticated(): boolean {
+    return !!getAuthToken();
+}

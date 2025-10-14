@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Upload, X } from 'lucide-react';
-
-type Section = 'sms' | 'backoffice' | 'general';
+import { getCategories, createInformation } from '../shared/services/information.service';
+import type { CategoryHierarchyResponse } from '../shared/interfaces/information.interface';
+import Toast from './Toast';
 
 interface FormData {
-    section: Section;
-    category: string;
-    subtopic: string;
-    answer: string;
+    mainCategory: string;
+    subCategory: string;
+    question: string;
+    content: string;
     files: File[];
 }
 
@@ -17,31 +18,61 @@ interface RegistrationFormProps {
     onBack?: () => void;
 }
 
+interface ToastState {
+    show: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning';
+}
+
 const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
-        section: 'sms',
-        category: '',
-        subtopic: '',
-        answer: '',
+        mainCategory: '',
+        subCategory: '',
+        question: '',
+        content: '',
         files: [],
     });
 
-    const sections = [
-        { id: 'sms' as Section, label: 'SMS', colorClass: 'bg-high-data border-high-data' },
-        { id: 'backoffice' as Section, label: 'Backoffice', colorClass: 'bg-high-data border-high-data' },
-        { id: 'general' as Section, label: 'Dúvidas Gerais', colorClass: 'bg-high-data border-high-data' },
-    ];
+    const [categories, setCategories] = useState<CategoryHierarchyResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [toast, setToast] = useState<ToastState>({
+        show: false,
+        message: '',
+        type: 'success'
+    });
 
-    const smsCategories = [
-        'Campanhas', 'Blacklist', 'Financeiro', 'Empresas',
-        'Serviços', 'Relatórios', 'API Externa', 'FAQ'
-    ];
+    const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
+        setToast({ show: true, message, type });
+    };
 
-    const backofficeCategories = [
-        'Operacional', 'Financeiro', 'Empresas', 'Fornecedores',
-        'Mensageria', 'Monitoramento', 'Usuários Backoffice', 'FAQ'
-    ];
+    const closeToast = () => {
+        setToast({ ...toast, show: false });
+    };
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCategories = async () => {
+        try {
+            const data = await getCategories();
+            setCategories(data);
+
+            if (data.mainCategories.length > 0) {
+                setFormData(prev => ({
+                    ...prev,
+                    mainCategory: data.mainCategories[0].value
+                }));
+            }
+        } catch (error) {
+            console.error('Erro ao carregar categorias:', error);
+            showToast('Não foi possível carregar as categorias. Por favor, recarregue a página.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files;
@@ -54,7 +85,7 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
             );
 
             if (validFiles.length !== filesArray.length) {
-                alert('Apenas arquivos PDF e DOCX são permitidos');
+                showToast('Alguns arquivos foram ignorados. Apenas PDF e DOCX são permitidos.', 'warning');
             }
 
             setFormData({ ...formData, files: [...formData.files, ...validFiles] });
@@ -65,30 +96,93 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
         setFormData({ ...formData, files: formData.files.filter((_, i) => i !== index) });
     };
 
-    const handleSubmit = () => {
-        if (!formData.subtopic || !formData.answer) {
-            alert('Por favor, preencha os campos obrigatórios');
-            return;
-        }
-        console.log('Form submitted:', formData);
-        alert('Informação cadastrada com sucesso!');
-        // Redireciona para home após salvar
-        navigate('/');
+    const handleMainCategoryChange = (value: string) => {
+        setFormData({
+            ...formData,
+            mainCategory: value,
+            subCategory: ''
+        });
     };
 
-    const getCategories = () => {
-        if (formData.section === 'sms') return smsCategories;
-        if (formData.section === 'backoffice') return backofficeCategories;
-        return ['Dúvidas Gerais'];
+    const handleSubmit = async () => {
+        if (!formData.question.trim() || !formData.content.trim()) {
+            showToast('Por favor, preencha a pergunta e o conteúdo antes de continuar.', 'warning');
+            return;
+        }
+
+        if (!formData.subCategory) {
+            showToast('Por favor, selecione uma categoria antes de salvar.', 'warning');
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            const fileIdentifier = undefined;
+
+            await createInformation({
+                question: formData.question,
+                content: formData.content,
+                file_identifier: fileIdentifier,
+                main_category: formData.mainCategory,
+                sub_category: formData.subCategory,
+            });
+
+            showToast('Informação cadastrada com sucesso!', 'success');
+
+
+            setTimeout(() => {
+                navigate('/register');
+            }, 1500);
+
+            setFormData({
+                mainCategory: categories?.mainCategories[0]?.value || '',
+                subCategory: '',
+                question: '',
+                content: '',
+                files: [],
+            });
+
+        } catch (error: any) {
+            console.error('Erro ao cadastrar informação:', error);
+            const errorMessage = error.message || 'Ocorreu um erro ao salvar a informação. Tente novamente.';
+            showToast(errorMessage, 'error');
+        } finally {
+            setSubmitting(false);
+        }
     };
+
+    const getCurrentSubCategories = () => {
+        if (!categories || !formData.mainCategory) return [];
+        return categories.subCategories[formData.mainCategory] || [];
+    };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center py-12">
+                <div className={`text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Carregando formulário...
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="font-sans">
+            {/* Toast Notification */}
+            {toast.show && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={closeToast}
+                />
+            )}
+
             {/* Grid com 2 colunas */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                 {/* Coluna 1 */}
                 <div className="space-y-4">
-                    {/* Section Selection */}
+                    {/* Main Category Selection */}
                     <div className={`rounded-xl border-2 p-4 ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                     }`}>
@@ -98,52 +192,52 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                             Seção *
                         </span>
                         <div className="grid grid-cols-3 gap-2">
-                            {sections.map((section) => (
+                            {categories?.mainCategories.map((category) => (
                                 <button
-                                    key={section.id}
-                                    onClick={() => setFormData({ ...formData, section: section.id, category: '' })}
+                                    key={category.value}
+                                    onClick={() => handleMainCategoryChange(category.value)}
                                     className={`p-2 rounded-lg border-2 transition-all font-medium text-sm ${
-                                        formData.section === section.id
-                                            ? `${section.colorClass} text-white`
+                                        formData.mainCategory === category.value
+                                            ? 'bg-high-data border-high-data text-white'
                                             : darkMode
                                                 ? 'border-gray-700 text-gray-400'
                                                 : 'border-gray-200 text-gray-600'
                                     }`}
                                 >
-                                    {section.label}
+                                    {category.label}
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Category Selection */}
-                    {formData.section !== 'general' && (
-                        <div className={`rounded-xl border-2 p-4 ${
-                            darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
+                    {/* Sub Category Selection */}
+                    <div className={`rounded-xl border-2 p-4 ${
+                        darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
+                    }`}>
+                        <span className={`text-xs font-bold mb-2 block font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            <span className={`text-xs font-bold mb-2 block font-heading ${
-                                darkMode ? 'text-white' : 'text-max-data'
-                            }`}>
-                                Categoria *
-                            </span>
-                            <select
-                                value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
-                                    darkMode
-                                        ? 'bg-[#1a1a1a] border-gray-700 text-white'
-                                        : 'bg-white border-gray-200 text-gray-900'
-                                }`}
-                            >
-                                <option value="">Selecione uma categoria</option>
-                                {getCategories().map((cat) => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+                            Categoria *
+                        </span>
+                        <select
+                            value={formData.subCategory}
+                            onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
+                            className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
+                                darkMode
+                                    ? 'bg-[#1a1a1a] border-gray-700 text-white'
+                                    : 'bg-white border-gray-200 text-gray-900'
+                            }`}
+                        >
+                            <option value="">Selecione uma categoria</option>
+                            {getCurrentSubCategories().map((subCat) => (
+                                <option key={subCat.value} value={subCat.value}>
+                                    {subCat.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                    {/* Subtopic/Question */}
+                    {/* Question */}
                     <div className={`rounded-xl border-2 p-4 ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                     }`}>
@@ -154,8 +248,8 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                         </span>
                         <input
                             type="text"
-                            value={formData.subtopic}
-                            onChange={(e) => setFormData({ ...formData, subtopic: e.target.value })}
+                            value={formData.question}
+                            onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                             placeholder="Ex: Como criar uma campanha"
                             className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
                                 darkMode
@@ -241,7 +335,7 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                     </div>
                 </div>
 
-                {/* Coluna 2 - Answer (textarea grande) */}
+                {/* Coluna 2 - Content (textarea grande) */}
                 <div className={`rounded-xl border-2 p-4 flex flex-col ${
                     darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                 }`}>
@@ -251,8 +345,8 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                         Resposta/Conteúdo *
                     </span>
                     <textarea
-                        value={formData.answer}
-                        onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                        value={formData.content}
+                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                         placeholder="Digite o conteúdo detalhado da resposta..."
                         className={`w-full flex-1 p-3 text-sm rounded-lg border-2 outline-none transition-colors resize-none ${
                             darkMode
@@ -268,7 +362,8 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                 <div className="flex justify-start">
                     <button
                         onClick={() => navigate('/')}
-                        className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white"
+                        disabled={submitting}
+                        className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white disabled:opacity-50"
                     >
                         Voltar
                     </button>
@@ -276,10 +371,11 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
 
                 <button
                     onClick={handleSubmit}
-                    className="px-8 py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white"
+                    disabled={submitting}
+                    className="px-8 py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white disabled:opacity-50"
                 >
                     <Save className="w-5 h-5" />
-                    Salvar Informação
+                    {submitting ? 'Salvando...' : 'Salvar Informação'}
                 </button>
             </div>
         </div>
