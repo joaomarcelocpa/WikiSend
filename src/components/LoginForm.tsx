@@ -1,3 +1,4 @@
+// src/components/LoginForm.tsx
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../shared/hooks/useAuth';
@@ -7,7 +8,7 @@ interface LoginFormProps {
 }
 
 const LoginForm = ({ darkMode }: LoginFormProps) => {
-    const { loading, error } = useAuth();
+    const { login, loading, error } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +17,7 @@ const LoginForm = ({ darkMode }: LoginFormProps) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Previne múltiplas submissões
         if (loading) {
             return;
         }
@@ -27,6 +29,17 @@ const LoginForm = ({ darkMode }: LoginFormProps) => {
             return;
         }
 
+        console.log('Tentando fazer login...');
+        const success = await login({ email, password });
+
+        if (success) {
+            console.log('Login realizado com sucesso!');
+            // O redirecionamento é feito automaticamente pelo Login.tsx
+            // através do useEffect que observa isAuthenticated
+        } else {
+            console.log('Erro no login:', error);
+            setLocalError(error || 'Erro ao efetuar login');
+        }
     };
 
     return (

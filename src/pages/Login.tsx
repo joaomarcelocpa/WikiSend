@@ -1,3 +1,4 @@
+// src/pages/Login.tsx
 import { Sun, Moon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +14,7 @@ const Login = ({ darkMode, setDarkMode }: LoginProps) => {
     const navigate = useNavigate();
     const { isAuthenticated, loading } = useAuth();
 
+    // Se já estiver autenticado, redireciona para home
     useEffect(() => {
         if (!loading && isAuthenticated) {
             console.log('Usuário já autenticado, redirecionando para home...');
@@ -20,6 +22,7 @@ const Login = ({ darkMode, setDarkMode }: LoginProps) => {
         }
     }, [isAuthenticated, loading, navigate]);
 
+    // Mostra tela de loading enquanto verifica autenticação
     if (loading) {
         return (
             <div className={`min-h-screen flex items-center justify-center font-sans ${

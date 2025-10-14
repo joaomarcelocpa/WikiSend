@@ -307,7 +307,7 @@ const EditForm = ({ darkMode, editingId }: EditFormProps) => {
             <div className="flex justify-between items-center">
                 <div className="flex justify-start">
                     <button
-                        onClick={() => navigate('/edit')}
+                        onClick={() => navigate('/home')}
                         className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white"
                     >
                         Voltar

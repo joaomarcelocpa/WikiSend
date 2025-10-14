@@ -15,7 +15,7 @@ const RegisterInformation = ({ darkMode, setDarkMode }: RegisterInformationProps
         <div className={`min-h-screen font-sans ${
             darkMode ? 'bg-[#0f0f0f]' : 'bg-gray-50'
         }`}>
-            <Navbar darkMode={darkMode} setDarkMode={setDarkMode} showUserInfo={false} />
+            <Navbar darkMode={darkMode} setDarkMode={setDarkMode} showUserInfo={true} />
 
             <div className="max-w-[1400px] mx-auto px-8 py-8">
                 <div className="mb-6">

@@ -66,10 +66,10 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
     ];
 
     const sections = [
-        { id: 'all', label: 'Todas', color: 'bg-gray-500' },
-        { id: 'Dúvidas Gerais', label: 'Dúvidas Gerais', color: 'bg-max-data' },
+        { id: 'all', label: 'Todas', color: 'bg-high-data' },
+        { id: 'Dúvidas Gerais', label: 'Dúvidas Gerais', color: 'bg-high-data' },
         { id: 'SMS', label: 'SMS', color: 'bg-high-data' },
-        { id: 'Backoffice', label: 'Backoffice', color: 'bg-mid-data' },
+        { id: 'Backoffice', label: 'Backoffice', color: 'bg-high-data' },
     ];
 
     const filteredData = mockData.filter(item => {
