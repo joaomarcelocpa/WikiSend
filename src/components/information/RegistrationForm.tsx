@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Upload, X } from 'lucide-react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import Highlight from '@tiptap/extension-highlight';
+import Link from '@tiptap/extension-link';
 import { createInformation } from '../../shared/services/information.service.ts';
 import { getAllCategories } from '../../shared/services/category.service.ts';
 import type { CategoryViewResponse } from '../../shared/interfaces/category.interface.ts';
@@ -25,6 +31,166 @@ interface ToastState {
     type: 'success' | 'error' | 'warning';
 }
 
+// Componente da barra de ferramentas do editor
+const EditorMenuBar = ({ editor, darkMode }: { editor: any; darkMode: boolean }) => {
+    if (!editor) return null;
+
+    const addLink = () => {
+        const url = window.prompt('URL:');
+        if (url) {
+            editor.chain().focus().setLink({ href: url }).run();
+        }
+    };
+
+    const buttonClass = `px-3 py-1.5 border rounded hover:opacity-80 text-xs font-medium transition-all ${
+        darkMode
+            ? 'border-gray-700 text-gray-300 hover:bg-gray-800'
+            : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+    }`;
+
+    const activeClass = darkMode
+        ? 'bg-high-data border-high-data text-white'
+        : 'bg-high-data border-high-data text-white';
+
+    return (
+        <div className={`border-b p-2 flex flex-wrap gap-2 ${
+            darkMode ? 'border-gray-700 bg-[#1a1a1a]' : 'border-gray-200 bg-gray-50'
+        }`}>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={`${buttonClass} font-bold ${editor.isActive('bold') ? activeClass : ''}`}
+            >
+                B
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={`${buttonClass} italic ${editor.isActive('italic') ? activeClass : ''}`}
+            >
+                I
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={`${buttonClass} underline ${editor.isActive('underline') ? activeClass : ''}`}
+            >
+                U
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleHighlight().run()}
+                className={`${buttonClass} ${editor.isActive('highlight') ? activeClass : ''}`}
+            >
+                Destacar
+            </button>
+
+            <div className={`w-px h-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                className={`${buttonClass} ${editor.isActive('heading', { level: 1 }) ? activeClass : ''}`}
+            >
+                H1
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                className={`${buttonClass} ${editor.isActive('heading', { level: 2 }) ? activeClass : ''}`}
+            >
+                H2
+            </button>
+
+            <div className={`w-px h-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                className={`${buttonClass} ${editor.isActive({ textAlign: 'left' }) ? activeClass : ''}`}
+            >
+                ⬅
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                className={`${buttonClass} ${editor.isActive({ textAlign: 'center' }) ? activeClass : ''}`}
+            >
+                ↔
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                className={`${buttonClass} ${editor.isActive({ textAlign: 'right' }) ? activeClass : ''}`}
+            >
+                ➡
+            </button>
+
+            <div className={`w-px h-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                className={`${buttonClass} ${editor.isActive('bulletList') ? activeClass : ''}`}
+            >
+                • Lista
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={`${buttonClass} ${editor.isActive('orderedList') ? activeClass : ''}`}
+            >
+                1. Lista
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                className={`${buttonClass} ${editor.isActive('blockquote') ? activeClass : ''}`}
+            >
+                " Citação
+            </button>
+
+            <div className={`w-px h-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+            <button
+                type="button"
+                onClick={addLink}
+                className={`${buttonClass} ${editor.isActive('link') ? activeClass : ''}`}
+            >
+                🔗 Link
+            </button>
+
+            <div className={`w-px h-8 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().undo().run()}
+                className={buttonClass}
+                disabled={!editor.can().undo()}
+            >
+                ↶
+            </button>
+
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().redo().run()}
+                className={buttonClass}
+                disabled={!editor.can().redo()}
+            >
+                ↷
+            </button>
+        </div>
+    );
+};
+
 const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
@@ -42,6 +208,33 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
         show: false,
         message: '',
         type: 'success'
+    });
+
+    // Configuração do editor Tiptap
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            Underline,
+            Highlight,
+            Link.configure({
+                openOnClick: false,
+            }),
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
+        ],
+        content: '',
+        onUpdate: ({ editor }) => {
+            // Atualiza o conteúdo do formulário quando o editor muda
+            setFormData(prev => ({ ...prev, content: editor.getHTML() }));
+        },
+        editorProps: {
+            attributes: {
+                class: `prose prose-sm max-w-none focus:outline-none ${
+                    darkMode ? 'prose-invert' : ''
+                }`,
+            },
+        },
     });
 
     const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
@@ -123,7 +316,7 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
 
             await createInformation({
                 question: formData.question,
-                content: formData.content,
+                content: formData.content, // Já está em HTML do editor
                 file_identifier: fileIdentifier,
                 category_identifier: formData.categoryIdentifier,
                 sub_category_identifier: formData.subCategoryIdentifier,
@@ -135,6 +328,8 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                 navigate('/register');
             }, 1500);
 
+            // Limpa o editor e o formulário
+            editor?.commands.setContent('');
             setFormData({
                 categoryIdentifier: categories[0]?.identifier || '',
                 subCategoryIdentifier: '',
@@ -192,6 +387,7 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                             {categories.map((category) => (
                                 <button
                                     key={category.identifier}
+                                    type="button"
                                     onClick={() => handleCategoryChange(category.identifier)}
                                     className={`p-2 rounded-lg border-2 transition-all font-medium text-sm ${
                                         formData.categoryIdentifier === category.identifier
@@ -319,6 +515,7 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                                             </div>
                                         </div>
                                         <button
+                                            type="button"
                                             onClick={() => handleRemoveFile(index)}
                                             className="p-1 hover:bg-red-500/10 rounded transition-colors flex-shrink-0"
                                         >
@@ -331,31 +528,37 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className={`rounded-xl border-2 p-4 flex flex-col ${
+                {/* Content with Tiptap Editor */}
+                <div className={`rounded-xl border-2 flex flex-col overflow-hidden ${
                     darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                 }`}>
-                    <span className={`text-xs font-bold mb-2 block font-heading ${
-                        darkMode ? 'text-white' : 'text-max-data'
+                    <div className="p-4 pb-2">
+                        <span className={`text-xs font-bold block font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
+                        }`}>
+                            Conteúdo *
+                        </span>
+                    </div>
+
+                    <EditorMenuBar editor={editor} darkMode={darkMode} />
+
+                    <div className={`flex-1 overflow-y-auto ${
+                        darkMode ? 'bg-[#1a1a1a]' : 'bg-white'
                     }`}>
-                        Resposta/Conteúdo *
-                    </span>
-                    <textarea
-                        value={formData.content}
-                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                        placeholder="Digite o conteúdo detalhado da resposta..."
-                        className={`w-full flex-1 p-3 text-sm rounded-lg border-2 outline-none transition-colors resize-none ${
-                            darkMode
-                                ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500'
-                                : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
-                        }`}
-                    />
+                        <EditorContent
+                            editor={editor}
+                            className={`p-4 min-h-[400px] ${
+                                darkMode ? 'text-white' : 'text-gray-900'
+                            }`}
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex justify-between items-center">
                 <button
+                    type="button"
                     onClick={() => navigate('/')}
                     disabled={submitting}
                     className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white disabled:opacity-50"
@@ -364,6 +567,7 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                 </button>
 
                 <button
+                    type="button"
                     onClick={handleSubmit}
                     disabled={submitting}
                     className="px-8 py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white disabled:opacity-50"
