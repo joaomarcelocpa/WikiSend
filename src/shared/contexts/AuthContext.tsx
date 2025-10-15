@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { loginUser, type LoginRequest, type LoginResponse } from '../services/login.service';
+import { loginUser } from '../services/login.service';
+import type {LoginRequest, LoginResponse} from "../interfaces/login.interface.ts";
 
 interface AuthContextData {
     user: LoginResponse['user'] | null;

@@ -1,17 +1,4 @@
-// src/shared/services/login.service.ts
-export interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-export interface LoginResponse {
-    access_token: string;
-    user?: {
-        id: string;
-        name: string;
-        email: string;
-    };
-}
+import type {LoginRequest, LoginResponse} from "../interfaces/login.interface.ts";
 
 export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
     try {
@@ -28,14 +15,9 @@ export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao fazer login:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: boolean | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
-}
-
-export function saveAuthToken(token: string): void {
-    localStorage.setItem('token', token);
 }
 
 export function getAuthToken(): string | null {
