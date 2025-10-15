@@ -480,7 +480,7 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
                         <span className={`text-xs font-bold block font-heading ${
                             darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            Conteúdo/Resposta *
+                            Conteúdo *
                         </span>
                     </div>
 
