@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Save, Plus, X } from 'lucide-react';
-import Toast from './Toast';
-import ConfirmDialog from './ConfirmDialog';
+import Toast from '../utils/Toast.tsx';
+import ConfirmDialog from '../utils/ConfirmDialog.tsx';
 import {
     getCategoryById,
     updateCategory,
     createSubCategory,
     deleteSubCategory,
-} from '../shared/services/category.service';
-import type { SubCategoryInfo } from '../shared/interfaces/category.interface';
+} from '../../shared/services/category.service.ts';
+import type { SubCategoryInfo } from '../../shared/interfaces/category.interface.ts';
 
 interface EditCategoryFormProps {
     darkMode: boolean;

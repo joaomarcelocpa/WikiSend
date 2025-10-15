@@ -1,7 +1,7 @@
 import { FileText, Wrench, MessageSquare, MailOpen, Edit, FolderPlus, FolderEdit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from "../components/Footer.tsx";
+import Navbar from '../components/layout/Navbar.tsx';
+import Footer from "../components/layout/Footer.tsx";
 
 interface HomeProps {
     darkMode: boolean;

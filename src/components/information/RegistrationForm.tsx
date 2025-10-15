@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Upload, X } from 'lucide-react';
-import { createInformation } from '../shared/services/information.service';
-import { getAllCategories } from '../shared/services/category.service';
-import type { CategoryViewResponse } from '../shared/interfaces/category.interface';
-import Toast from './Toast';
+import { createInformation } from '../../shared/services/information.service.ts';
+import { getAllCategories } from '../../shared/services/category.service.ts';
+import type { CategoryViewResponse } from '../../shared/interfaces/category.interface.ts';
+import Toast from '../utils/Toast.tsx';
 
 interface FormData {
     categoryIdentifier: string;

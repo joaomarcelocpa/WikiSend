@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X, Plus } from 'lucide-react';
-import { createCategory } from '../shared/services/category.service';
-import Toast from './Toast';
+import { createCategory } from '../../shared/services/category.service.ts';
+import Toast from '../utils/Toast.tsx';
 
 interface RegisterCategoryFormProps {
     darkMode: boolean;

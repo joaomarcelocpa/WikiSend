@@ -1,11 +1,11 @@
 import { Search, Edit, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import EditForm from '../components/EditForm';
-import Toast from '../components/Toast';
-import ConfirmDialog from '../components/ConfirmDialog';
+import Navbar from '../components/layout/Navbar.tsx';
+import Footer from '../components/layout/Footer.tsx';
+import EditForm from '../components/information/EditForm.tsx';
+import Toast from '../components/utils/Toast.tsx';
+import ConfirmDialog from '../components/utils/ConfirmDialog.tsx';
 import { getAllInformation, deleteInformation } from '../shared/services/information.service';
 import { getAllCategories } from '../shared/services/category.service';
 import type { InformationViewResponse } from '../shared/interfaces/information.interface';

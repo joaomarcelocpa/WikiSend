@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
-import Toast from './Toast';
+import Toast from '../utils/Toast.tsx';
 import {
     getInformationById,
     updateInformation,
-} from '../shared/services/information.service';
-import { getAllCategories } from '../shared/services/category.service';
-import type { InformationUpdateRequest } from '../shared/interfaces/information.interface';
-import type { CategoryViewResponse } from '../shared/interfaces/category.interface';
+} from '../../shared/services/information.service.ts';
+import { getAllCategories } from '../../shared/services/category.service.ts';
+import type { InformationUpdateRequest } from '../../shared/interfaces/information.interface.ts';
+import type { CategoryViewResponse } from '../../shared/interfaces/category.interface.ts';
 
 interface EditFormProps {
     darkMode: boolean;

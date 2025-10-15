@@ -1,6 +1,6 @@
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import RegisterCategoryForm from '../components/RegisterCategoryForm';
+import Navbar from '../components/layout/Navbar.tsx';
+import Footer from '../components/layout/Footer.tsx';
+import RegisterCategoryForm from '../components/category/RegisterCategoryForm.tsx';
 
 interface RegisterCategoryProps {
     darkMode: boolean;

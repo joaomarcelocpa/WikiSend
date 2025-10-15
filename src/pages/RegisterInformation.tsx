@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import RegistrationForm from '../components/RegistrationForm';
+import Navbar from '../components/layout/Navbar.tsx';
+import Footer from '../components/layout/Footer.tsx';
+import RegistrationForm from '../components/information/RegistrationForm.tsx';
 
 interface RegisterInformationProps {
     darkMode: boolean;

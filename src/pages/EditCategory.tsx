@@ -1,11 +1,11 @@
 import { Search, Edit, Trash2, FolderOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import EditCategoryForm from '../components/EditCategoryForm';
-import Toast from '../components/Toast';
-import ConfirmDialog from '../components/ConfirmDialog';
+import Navbar from '../components/layout/Navbar.tsx';
+import Footer from '../components/layout/Footer.tsx';
+import EditCategoryForm from '../components/category/EditCategoryForm.tsx';
+import Toast from '../components/utils/Toast.tsx';
+import ConfirmDialog from '../components/utils/ConfirmDialog.tsx';
 import { getAllCategories, deleteCategory } from '../shared/services/category.service';
 import type { CategoryViewResponse } from '../shared/interfaces/category.interface';
 

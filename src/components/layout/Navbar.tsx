@@ -1,7 +1,7 @@
 // src/components/Navbar.tsx
 import { Sun, Moon, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../shared/hooks/useAuth';
+import { useAuth } from '../../shared/hooks/useAuth.ts';
 
 interface NavbarProps {
     darkMode: boolean;

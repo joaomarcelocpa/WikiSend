@@ -1,7 +1,7 @@
 // src/components/LoginForm.tsx
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../shared/hooks/useAuth';
+import { useAuth } from '../../shared/hooks/useAuth.ts';
 
 interface LoginFormProps {
     darkMode: boolean;

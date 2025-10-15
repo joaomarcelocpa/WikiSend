@@ -2,7 +2,7 @@
 import { Sun, Moon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoginForm from '../components/LoginForm';
+import LoginForm from '../components/login/LoginForm.tsx';
 import { useAuth } from '../shared/hooks/useAuth';
 
 interface LoginProps {
