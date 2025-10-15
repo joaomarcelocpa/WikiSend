@@ -30,9 +30,8 @@ export async function getCategories(): Promise<CategoryHierarchyResponse> {
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao buscar categorias:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }
 
@@ -52,9 +51,8 @@ export async function createInformation(
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao criar informação:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }
 
@@ -70,9 +68,8 @@ export async function getAllInformation(): Promise<InformationViewResponse[]> {
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao buscar informações:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }
 
@@ -93,9 +90,8 @@ export async function getInformationByMainCategory(
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao buscar informações por categoria:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }
 
@@ -116,9 +112,8 @@ export async function getInformationBySubCategory(
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao buscar informações por subcategoria:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }
 
@@ -136,9 +131,8 @@ export async function getInformationById(
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao buscar informação:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }
 
@@ -159,9 +153,8 @@ export async function updateInformation(
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao atualizar informação:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }
 
@@ -179,8 +172,7 @@ export async function deleteInformation(
         }
 
         return await response.json();
-    } catch (error: any) {
-        console.error('Erro ao deletar informação:', error);
-        throw new Error(error.message || 'Erro na conexão com o servidor');
+    } catch (error: string | unknown) {
+        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
     }
 }

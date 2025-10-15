@@ -1,126 +1,160 @@
-// src/components/EditForm.tsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Save, Upload, X } from 'lucide-react';
-
-type Section = 'general' | 'sms' | 'backoffice';
-
-interface FormData {
-    section: Section;
-    category: string;
-    subtopic: string;
-    answer: string;
-    files: File[];
-}
+import { Save } from 'lucide-react';
+import Toast from './Toast';
+import {
+    getInformationById,
+    updateInformation,
+    getCategories
+} from '../shared/services/information.service';
+import type {
+    InformationUpdateRequest,
+    CategoryHierarchyResponse
+} from '../shared/interfaces/information.interface';
 
 interface EditFormProps {
     darkMode: boolean;
     editingId: string;
+    onSuccess: () => void;
+    onCancel: () => void;
 }
 
-const EditForm = ({ darkMode, editingId }: EditFormProps) => {
-    const navigate = useNavigate();
+interface FormData {
+    main_category: string;
+    sub_category: string;
+    question: string;
+    content: string;
+    file_identifier?: number;
+}
+
+const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) => {
     const [formData, setFormData] = useState<FormData>({
-        section: 'general',
-        category: '',
-        subtopic: '',
-        answer: '',
-        files: [],
+        main_category: '',
+        sub_category: '',
+        question: '',
+        content: '',
+        file_identifier: undefined,
     });
+    const [categories, setCategories] = useState<CategoryHierarchyResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [currentFile, setCurrentFile] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
-    const sections = [
-        { id: 'general' as Section, label: 'Dúvidas Gerais', colorClass: 'bg-max-data border-max-data' },
-        { id: 'sms' as Section, label: 'SMS', colorClass: 'bg-high-data border-high-data' },
-        { id: 'backoffice' as Section, label: 'Backoffice', colorClass: 'bg-mid-data border-mid-data' },
-    ];
-
-    const smsCategories = [
-        'Campanhas', 'Blacklist', 'Financeiro', 'Empresas',
-        'Serviços', 'Relatórios', 'API Externa', 'FAQ'
-    ];
-
-    const backofficeCategories = [
-        'Operacional', 'Financeiro', 'Empresas', 'Fornecedores',
-        'Mensageria', 'Monitoramento', 'Usuários Backoffice', 'FAQ'
-    ];
-
-    // Carregar dados ao montar o componente
+    // Carregar categorias e dados da informação
     useEffect(() => {
-        // Dados mockados - substitua por chamada à API
-        const mockData: Record<string, FormData> = {
-            '1': {
-                section: 'sms',
-                category: 'Campanhas',
-                subtopic: 'Como criar uma campanha',
-                answer: 'Para criar uma campanha, acesse o menu Campanhas no sistema SMS e clique em "Nova Campanha". Preencha os campos obrigatórios como nome da campanha, público-alvo e conteúdo da mensagem.',
-                files: []
-            },
-            '2': {
-                section: 'backoffice',
-                category: 'Financeiro',
-                subtopic: 'Como gerar relatório mensal',
-                answer: 'Para gerar o relatório mensal, acesse o menu Relatórios > Financeiro. Selecione o mês desejado e clique em "Gerar Relatório". O arquivo será gerado em formato PDF.',
-                files: []
-            },
-            '3': {
-                section: 'general',
-                category: '',
-                subtopic: 'Como recuperar senha',
-                answer: 'Para recuperar sua senha, clique em "Esqueci minha senha" na tela de login. Informe seu e-mail cadastrado e siga as instruções enviadas.',
-                files: []
-            },
-            '4': {
-                section: 'sms',
-                category: 'Blacklist',
-                subtopic: 'Como adicionar número na blacklist',
-                answer: 'Para adicionar um número na blacklist, acesse o menu Blacklist, clique em "Adicionar Número" e informe o DDD e número do telefone.',
-                files: []
-            },
-        };
-
-        const data = mockData[editingId];
-        if (data) {
-            setFormData(data);
-        }
+        loadData();
     }, [editingId]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFiles = e.target.files;
-        if (selectedFiles) {
-            const filesArray = Array.from(selectedFiles);
-            const validFiles = filesArray.filter(file =>
-                file.type === 'application/pdf' ||
-                file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-                file.type === 'application/msword'
-            );
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
 
-            if (validFiles.length !== filesArray.length) {
-                alert('Apenas arquivos PDF e DOCX são permitidos');
+            // Carregar categorias e informação em paralelo
+            const [categoriesData, informationData] = await Promise.all([
+                getCategories(),
+                getInformationById(editingId)
+            ]);
+
+            setCategories(categoriesData);
+            setFormData({
+                main_category: informationData.main_category,
+                sub_category: informationData.sub_category,
+                question: informationData.question,
+                content: informationData.content,
+                file_identifier: informationData.file_identifier,
+            });
+
+            if (informationData.file) {
+                setCurrentFile(informationData.file.originalName);
             }
-
-            setFormData({ ...formData, files: [...formData.files, ...validFiles] });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
+            console.error('Erro ao carregar dados:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleRemoveFile = (index: number) => {
-        setFormData({ ...formData, files: formData.files.filter((_, i) => i !== index) });
-    };
-
-    const handleSubmit = () => {
-        if (!formData.subtopic || !formData.answer) {
-            alert('Por favor, preencha os campos obrigatórios');
+    const handleSubmit = async () => {
+        // Validação
+        if (!formData.question.trim()) {
+            setToast({ message: 'Por favor, preencha a pergunta', type: 'warning' });
             return;
         }
-        console.log('Form updated:', formData);
-        alert('Informação atualizada com sucesso!');
-        navigate('/edit');
+        if (!formData.content.trim()) {
+            setToast({ message: 'Por favor, preencha o conteúdo', type: 'warning' });
+            return;
+        }
+        if (!formData.main_category) {
+            setToast({ message: 'Por favor, selecione uma categoria principal', type: 'warning' });
+            return;
+        }
+
+        try {
+            setSubmitting(true);
+            setError(null);
+
+            const updateData: InformationUpdateRequest = {
+                question: formData.question,
+                content: formData.content,
+                main_category: formData.main_category,
+                sub_category: formData.sub_category || undefined,
+                file_identifier: formData.file_identifier,
+            };
+
+            await updateInformation(editingId, updateData);
+            setToast({ message: 'Informação atualizada com sucesso!', type: 'success' });
+
+            // Aguardar um pouco para o usuário ver o toast antes de fechar
+            setTimeout(() => {
+                onSuccess();
+            }, 1500);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar informação';
+            setError(errorMessage);
+            setToast({ message: errorMessage, type: 'error' });
+            console.error('Erro ao atualizar:', err);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    const getCategories = () => {
-        if (formData.section === 'sms') return smsCategories;
-        if (formData.section === 'backoffice') return backofficeCategories;
-        return ['Dúvidas Gerais'];
+    const getSubCategories = () => {
+        if (!categories || !formData.main_category) return [];
+        return categories.subCategories[formData.main_category] || [];
     };
+
+    if (loading) {
+        return (
+            <div className={`rounded-xl border-2 p-8 text-center ${
+                darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+                <p className={`text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Carregando informação...
+                </p>
+            </div>
+        );
+    }
+
+    if (error && !formData.question) {
+        return (
+            <div className={`rounded-xl border-2 p-8 text-center ${
+                darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200'
+            }`}>
+                <p className={`text-base mb-4 ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
+                    {error}
+                </p>
+                <button
+                    onClick={onCancel}
+                    className="px-4 py-2 bg-high-data text-white rounded-lg hover:opacity-80 transition-all"
+                >
+                    Voltar
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="font-sans">
@@ -128,200 +162,184 @@ const EditForm = ({ darkMode, editingId }: EditFormProps) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                 {/* Coluna 1 */}
                 <div className="space-y-4">
-                    {/* Section Selection */}
+                    {/* Main Category Selection */}
                     <div className={`rounded-xl border-2 p-4 ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                     }`}>
                         <span className={`text-xs font-bold mb-2 block font-heading ${
                             darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            Seção *
+                            Categoria Principal *
                         </span>
-                        <div className="grid grid-cols-3 gap-2">
-                            {sections.map((section) => (
-                                <button
-                                    key={section.id}
-                                    onClick={() => setFormData({ ...formData, section: section.id, category: '' })}
-                                    className={`p-2 rounded-lg border-2 transition-all font-medium text-sm ${
-                                        formData.section === section.id
-                                            ? `${section.colorClass} text-white`
-                                            : darkMode
-                                                ? 'border-gray-700 text-gray-400'
-                                                : 'border-gray-200 text-gray-600'
-                                    }`}
-                                >
-                                    {section.label}
-                                </button>
+                        <select
+                            value={formData.main_category}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                main_category: e.target.value,
+                                sub_category: ''
+                            })}
+                            disabled={submitting}
+                            className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
+                                darkMode
+                                    ? 'bg-[#1a1a1a] border-gray-700 text-white'
+                                    : 'bg-white border-gray-200 text-gray-900'
+                            } disabled:opacity-50`}
+                        >
+                            <option value="">Selecione uma categoria</option>
+                            {categories?.mainCategories.map((cat) => (
+                                <option key={cat.value} value={cat.value}>
+                                    {cat.label}
+                                </option>
                             ))}
-                        </div>
+                        </select>
                     </div>
 
-                    {/* Category Selection */}
-                    {formData.section !== 'general' && (
+                    {/* Sub Category Selection */}
+                    {formData.main_category && getSubCategories().length > 0 && (
                         <div className={`rounded-xl border-2 p-4 ${
                             darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                         }`}>
                             <span className={`text-xs font-bold mb-2 block font-heading ${
                                 darkMode ? 'text-white' : 'text-max-data'
                             }`}>
-                                Categoria *
+                                Subcategoria
                             </span>
                             <select
-                                value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                value={formData.sub_category}
+                                onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
+                                disabled={submitting}
                                 className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
                                     darkMode
                                         ? 'bg-[#1a1a1a] border-gray-700 text-white'
                                         : 'bg-white border-gray-200 text-gray-900'
-                                }`}
+                                } disabled:opacity-50`}
                             >
-                                <option value="">Selecione uma categoria</option>
-                                {getCategories().map((cat) => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                <option value="">Selecione uma subcategoria (opcional)</option>
+                                {getSubCategories().map((cat) => (
+                                    <option key={cat.value} value={cat.value}>
+                                        {cat.label}
+                                    </option>
                                 ))}
                             </select>
                         </div>
                     )}
 
-                    {/* Subtopic/Question */}
+                    {/* Question */}
                     <div className={`rounded-xl border-2 p-4 ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                     }`}>
                         <span className={`text-xs font-bold mb-2 block font-heading ${
                             darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            Subtópico/Pergunta *
+                            Pergunta *
                         </span>
                         <input
                             type="text"
-                            value={formData.subtopic}
-                            onChange={(e) => setFormData({ ...formData, subtopic: e.target.value })}
+                            value={formData.question}
+                            onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                             placeholder="Ex: Como criar uma campanha"
+                            disabled={submitting}
                             className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
                                 darkMode
                                     ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500'
                                     : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
-                            }`}
+                            } disabled:opacity-50`}
                         />
                     </div>
 
-                    {/* File Upload */}
-                    <div className={`rounded-xl border-2 p-4 ${
-                        darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
-                    }`}>
-                        <span className={`text-xs font-bold mb-2 block font-heading ${
-                            darkMode ? 'text-white' : 'text-max-data'
+                    {/* Current File Info */}
+                    {currentFile && (
+                        <div className={`rounded-xl border-2 p-4 ${
+                            darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                         }`}>
-                            Arquivos (Opcional)
-                        </span>
-                        <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-                            darkMode
-                                ? 'border-gray-700 hover:border-gray-600'
-                                : 'border-gray-300 hover:border-gray-400'
-                        }`}>
-                            <input
-                                type="file"
-                                id="file-upload"
-                                multiple
-                                accept=".pdf,.doc,.docx"
-                                onChange={handleFileChange}
-                                className="hidden"
-                            />
-                            <label
-                                htmlFor="file-upload"
-                                className="cursor-pointer flex flex-col items-center gap-2"
-                            >
-                                <Upload className={`w-8 h-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    Clique ou arraste arquivos
-                                </span>
-                                <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                    PDF ou DOCX (máx 10MB)
-                                </span>
-                            </label>
-                        </div>
-
-                        {/* Lista de arquivos */}
-                        {formData.files.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                                {formData.files.map((file, index) => (
-                                    <div
-                                        key={index}
-                                        className={`flex items-center justify-between p-2 rounded-lg ${
-                                            darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                            <div className="w-8 h-8 rounded flex items-center justify-center bg-mid-data/10 flex-shrink-0">
-                                                <span className="text-xs font-bold text-mid-data">
-                                                    {file.name.split('.').pop()?.toUpperCase()}
-                                                </span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className={`text-xs font-medium truncate ${
-                                                    darkMode ? 'text-white' : 'text-gray-900'
-                                                }`}>
-                                                    {file.name}
-                                                </p>
-                                                <p className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => handleRemoveFile(index)}
-                                            className="p-1 hover:bg-red-500/10 rounded transition-colors flex-shrink-0"
-                                        >
-                                            <X className="w-4 h-4 text-red-500" />
-                                        </button>
-                                    </div>
-                                ))}
+                            <span className={`text-xs font-bold mb-2 block font-heading ${
+                                darkMode ? 'text-white' : 'text-max-data'
+                            }`}>
+                                Arquivo Atual
+                            </span>
+                            <div className={`flex items-center gap-2 p-2 rounded-lg ${
+                                darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'
+                            }`}>
+                                <div className="w-8 h-8 rounded flex items-center justify-center bg-mid-data/10 flex-shrink-0">
+                                    <span className="text-xs font-bold text-mid-data">
+                                        {currentFile.split('.').pop()?.toUpperCase()}
+                                    </span>
+                                </div>
+                                <p className={`text-xs font-medium flex-1 ${
+                                    darkMode ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                    {currentFile}
+                                </p>
                             </div>
-                        )}
-                    </div>
+                            <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                Nota: A atualização de arquivos não está disponível nesta versão.
+                                Para alterar o arquivo, exclua e crie uma nova informação.
+                            </p>
+                        </div>
+                    )}
                 </div>
 
-                {/* Coluna 2 - Answer (textarea grande) */}
+                {/* Coluna 2 - Content (textarea grande) */}
                 <div className={`rounded-xl border-2 p-4 flex flex-col ${
                     darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                 }`}>
                     <span className={`text-xs font-bold mb-2 block font-heading ${
                         darkMode ? 'text-white' : 'text-max-data'
                     }`}>
-                        Resposta/Conteúdo *
+                        Conteúdo/Resposta *
                     </span>
                     <textarea
-                        value={formData.answer}
-                        onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                        value={formData.content}
+                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                         placeholder="Digite o conteúdo detalhado da resposta..."
+                        disabled={submitting}
                         className={`w-full flex-1 p-3 text-sm rounded-lg border-2 outline-none transition-colors resize-none ${
                             darkMode
                                 ? 'bg-[#1a1a1a] border-gray-700 text-white placeholder-gray-500'
                                 : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
-                        }`}
+                        } disabled:opacity-50`}
+                        rows={20}
                     />
                 </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex justify-between items-center">
-                <div className="flex justify-start">
-                    <button
-                        onClick={() => navigate('/home')}
-                        className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white"
-                    >
-                        Voltar
-                    </button>
-                </div>
+                <button
+                    onClick={onCancel}
+                    disabled={submitting}
+                    className="px-8 py-3 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white disabled:opacity-50"
+                >
+                    Cancelar
+                </button>
 
                 <button
                     onClick={handleSubmit}
-                    className="px-8 py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white"
+                    disabled={submitting}
+                    className="px-8 py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:shadow-xl hover:opacity-90 bg-high-data text-white disabled:opacity-50"
                 >
-                    <Save className="w-5 h-5" />
-                    Atualizar Informação
+                    {submitting ? (
+                        <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Atualizando...
+                        </>
+                    ) : (
+                        <>
+                            <Save className="w-5 h-5" />
+                            Atualizar Informação
+                        </>
+                    )}
                 </button>
             </div>
+
+            {/* Toast */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };
