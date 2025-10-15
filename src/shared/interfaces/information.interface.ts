@@ -1,13 +1,3 @@
-export interface CategoryInfo {
-    value: string;
-    label: string;
-}
-
-export interface CategoryHierarchyResponse {
-    mainCategories: CategoryInfo[];
-    subCategories: Record<string, CategoryInfo[]>;
-}
-
 export interface FileInfo {
     id: number;
     originalName: string;
@@ -18,12 +8,23 @@ export interface FileInfo {
     uploaded_at: Date;
 }
 
+export interface CategoryInfoDto {
+    identifier: string;
+    name: string;
+}
+
+export interface SubCategoryInfoDto {
+    identifier: string;
+    name: string;
+    category_identifier: string;
+}
+
 export interface InformationCreateRequest {
     question: string;
     content: string;
     file_identifier?: number;
-    main_category: string;
-    sub_category: string;
+    category_identifier: string;
+    sub_category_identifier: string;
 }
 
 export interface InformationCreateResponse {
@@ -32,8 +33,10 @@ export interface InformationCreateResponse {
     content: string;
     file?: FileInfo;
     file_identifier?: number;
-    main_category: string;
-    sub_category: string;
+    category_identifier: string;
+    category: CategoryInfoDto;
+    sub_category_identifier: string;
+    subCategory: SubCategoryInfoDto;
     user_identifier: string;
     user_name: string;
     created_at: Date;
@@ -46,8 +49,10 @@ export interface InformationViewResponse {
     content: string;
     file?: FileInfo;
     file_identifier?: number;
-    main_category: string;
-    sub_category: string;
+    category_identifier: string;
+    category: CategoryInfoDto;
+    sub_category_identifier: string;
+    subCategory: SubCategoryInfoDto;
     user_identifier: string;
     user_name: string;
     created_at: Date;
@@ -58,8 +63,8 @@ export interface InformationUpdateRequest {
     question?: string;
     content?: string;
     file_identifier?: number;
-    main_category?: string;
-    sub_category?: string;
+    category_identifier?: string;
+    sub_category_identifier?: string;
 }
 
 export interface InformationDeleteResponse {

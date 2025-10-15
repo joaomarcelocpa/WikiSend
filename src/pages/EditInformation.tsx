@@ -7,7 +7,9 @@ import EditForm from '../components/EditForm';
 import Toast from '../components/Toast';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getAllInformation, deleteInformation } from '../shared/services/information.service';
+import { getAllCategories } from '../shared/services/category.service';
 import type { InformationViewResponse } from '../shared/interfaces/information.interface';
+import type { CategoryViewResponse } from '../shared/interfaces/category.interface';
 
 interface EditInformationProps {
     darkMode: boolean;
@@ -17,9 +19,10 @@ interface EditInformationProps {
 const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedSection, setSelectedSection] = useState<string>('all');
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [editingId, setEditingId] = useState<string | null>(null);
     const [informations, setInformations] = useState<InformationViewResponse[]>([]);
+    const [categories, setCategories] = useState<CategoryViewResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
@@ -28,17 +31,20 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
         identifier: null
     });
 
-    // Carregar informações da API
     useEffect(() => {
-        loadInformations();
+        loadData();
     }, []);
 
-    const loadInformations = async () => {
+    const loadData = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await getAllInformation();
-            setInformations(data);
+            const [infoData, catData] = await Promise.all([
+                getAllInformation(),
+                getAllCategories()
+            ]);
+            setInformations(infoData);
+            setCategories(catData);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Erro ao carregar informações');
             console.error('Erro ao carregar informações:', err);
@@ -47,33 +53,26 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
         }
     };
 
-    // Extrair categorias principais únicas
-    const sections = [
+    const categoryOptions = [
         { id: 'all', label: 'Todas', color: 'bg-high-data' },
-        ...Array.from(new Set(informations.map(item => item.main_category)))
-            .map(category => ({
-                id: category,
-                label: category,
-                color: 'bg-high-data'
-            }))
+        ...categories.map(cat => ({
+            id: cat.identifier,
+            label: cat.name,
+            color: 'bg-high-data'
+        }))
     ];
 
     const filteredData = informations.filter(item => {
         const matchesSearch =
             item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.sub_category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.subCategory.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.content.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesSection = selectedSection === 'all' || item.main_category === selectedSection;
-        return matchesSearch && matchesSection;
+        const matchesCategory = selectedCategory === 'all' || item.category_identifier === selectedCategory;
+        return matchesSearch && matchesCategory;
     });
 
-    const getSectionColor = (section: string) => {
-        const colors: Record<string, string> = {
-            'SMS': 'bg-high-data',
-            'Backoffice': 'bg-mid-data',
-            'Dúvidas Gerais': 'bg-max-data'
-        };
-        return colors[section] || 'bg-high-data';
+    const getCategoryColor = () => {
+        return 'bg-high-data';
     };
 
     const handleDelete = (identifier: string) => {
@@ -86,8 +85,7 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
         try {
             await deleteInformation(confirmDelete.identifier);
             setToast({ message: 'Informação excluída com sucesso!', type: 'success' });
-            // Recarregar lista após exclusão
-            await loadInformations();
+            await loadData();
         } catch (err) {
             setToast({
                 message: err instanceof Error ? err.message : 'Erro ao excluir informação',
@@ -109,7 +107,7 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
 
     const handleEditSuccess = async () => {
         setEditingId(null);
-        await loadInformations();
+        await loadData();
     };
 
     if (editingId) {
@@ -151,7 +149,6 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
             <Navbar darkMode={darkMode} setDarkMode={setDarkMode} showUserInfo={true} />
 
             <div className="max-w-[1400px] mx-auto px-8 py-8 flex-1 w-full">
-                {/* Header */}
                 <div className="mb-6">
                     <h1 className={`text-3xl font-bold mb-3 font-heading ${
                         darkMode ? 'text-white' : 'text-max-data'
@@ -163,9 +160,7 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                     </p>
                 </div>
 
-                {/* Search and Filters */}
                 <div className="mb-6 space-y-4">
-                    {/* Search Bar */}
                     <div className="relative">
                         <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
                             darkMode ? 'text-gray-500' : 'text-gray-400'
@@ -183,27 +178,25 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                         />
                     </div>
 
-                    {/* Section Filter */}
                     <div className="flex gap-2 flex-wrap">
-                        {sections.map((section) => (
+                        {categoryOptions.map((category) => (
                             <button
-                                key={section.id}
-                                onClick={() => setSelectedSection(section.id)}
+                                key={category.id}
+                                onClick={() => setSelectedCategory(category.id)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                    selectedSection === section.id
-                                        ? `${section.color} text-white`
+                                    selectedCategory === category.id
+                                        ? `${category.color} text-white`
                                         : darkMode
                                             ? 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                             >
-                                {section.label}
+                                {category.label}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                {/* Loading State */}
                 {loading && (
                     <div className={`rounded-xl border-2 p-8 text-center ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
@@ -214,7 +207,6 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                     </div>
                 )}
 
-                {/* Error State */}
                 {error && (
                     <div className={`rounded-xl border-2 p-8 text-center ${
                         darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200'
@@ -223,7 +215,7 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                             {error}
                         </p>
                         <button
-                            onClick={loadInformations}
+                            onClick={loadData}
                             className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                         >
                             Tentar novamente
@@ -231,7 +223,6 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                     </div>
                 )}
 
-                {/* Results Count */}
                 {!loading && !error && (
                     <div className="mb-4">
                         <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -240,7 +231,6 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                     </div>
                 )}
 
-                {/* Information List */}
                 {!loading && !error && (
                     <div className="space-y-3 mb-6">
                         {filteredData.length === 0 ? (
@@ -262,14 +252,14 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getSectionColor(item.main_category)}`}>
-                                                    {item.main_category}
+                                                <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getCategoryColor()}`}>
+                                                    {item.category.name}
                                                 </span>
-                                                {item.sub_category && (
+                                                {item.subCategory && (
                                                     <span className={`px-2 py-1 rounded text-xs font-medium ${
                                                         darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'
                                                     }`}>
-                                                        {item.sub_category}
+                                                        {item.subCategory.name}
                                                     </span>
                                                 )}
                                             </div>
@@ -320,7 +310,6 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                     </div>
                 )}
 
-                {/* Back Button */}
                 <div className="flex justify-start">
                     <button
                         onClick={() => navigate('/')}
@@ -333,7 +322,6 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
 
             <Footer darkMode={darkMode} />
 
-            {/* Confirm Dialog */}
             {confirmDelete.show && (
                 <ConfirmDialog
                     title="Excluir Informação"
@@ -347,7 +335,6 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                 />
             )}
 
-            {/* Toast */}
             {toast && (
                 <Toast
                     message={toast.message}

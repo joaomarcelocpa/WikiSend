@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Upload, X } from 'lucide-react';
-import { getCategories, createInformation } from '../shared/services/information.service';
-import type { CategoryHierarchyResponse } from '../shared/interfaces/information.interface';
+import { createInformation } from '../shared/services/information.service';
+import { getAllCategories } from '../shared/services/category.service';
+import type { CategoryViewResponse } from '../shared/interfaces/category.interface';
 import Toast from './Toast';
 
 interface FormData {
-    mainCategory: string;
-    subCategory: string;
+    categoryIdentifier: string;
+    subCategoryIdentifier: string;
     question: string;
     content: string;
     files: File[];
@@ -27,14 +28,14 @@ interface ToastState {
 const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
-        mainCategory: '',
-        subCategory: '',
+        categoryIdentifier: '',
+        subCategoryIdentifier: '',
         question: '',
         content: '',
         files: [],
     });
 
-    const [categories, setCategories] = useState<CategoryHierarchyResponse | null>(null);
+    const [categories, setCategories] = useState<CategoryViewResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [toast, setToast] = useState<ToastState>({
@@ -57,13 +58,13 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
 
     const loadCategories = async () => {
         try {
-            const data = await getCategories();
+            const data = await getAllCategories();
             setCategories(data);
 
-            if (data.mainCategories.length > 0) {
+            if (data.length > 0) {
                 setFormData(prev => ({
                     ...prev,
-                    mainCategory: data.mainCategories[0].value
+                    categoryIdentifier: data[0].identifier
                 }));
             }
         } catch (error) {
@@ -96,11 +97,11 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
         setFormData({ ...formData, files: formData.files.filter((_, i) => i !== index) });
     };
 
-    const handleMainCategoryChange = (value: string) => {
+    const handleCategoryChange = (value: string) => {
         setFormData({
             ...formData,
-            mainCategory: value,
-            subCategory: ''
+            categoryIdentifier: value,
+            subCategoryIdentifier: ''
         });
     };
 
@@ -110,8 +111,8 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
             return;
         }
 
-        if (!formData.subCategory) {
-            showToast('Por favor, selecione uma categoria antes de salvar.', 'warning');
+        if (!formData.subCategoryIdentifier) {
+            showToast('Por favor, selecione uma subcategoria antes de salvar.', 'warning');
             return;
         }
 
@@ -124,27 +125,25 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                 question: formData.question,
                 content: formData.content,
                 file_identifier: fileIdentifier,
-                main_category: formData.mainCategory,
-                sub_category: formData.subCategory,
+                category_identifier: formData.categoryIdentifier,
+                sub_category_identifier: formData.subCategoryIdentifier,
             });
 
             showToast('Informação cadastrada com sucesso!', 'success');
-
 
             setTimeout(() => {
                 navigate('/register');
             }, 1500);
 
             setFormData({
-                mainCategory: categories?.mainCategories[0]?.value || '',
-                subCategory: '',
+                categoryIdentifier: categories[0]?.identifier || '',
+                subCategoryIdentifier: '',
                 question: '',
                 content: '',
                 files: [],
             });
 
         } catch (error: any) {
-            console.error('Erro ao cadastrar informação:', error);
             const errorMessage = error.message || 'Ocorreu um erro ao salvar a informação. Tente novamente.';
             showToast(errorMessage, 'error');
         } finally {
@@ -153,8 +152,9 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
     };
 
     const getCurrentSubCategories = () => {
-        if (!categories || !formData.mainCategory) return [];
-        return categories.subCategories[formData.mainCategory] || [];
+        if (!formData.categoryIdentifier) return [];
+        const selectedCategory = categories.find(cat => cat.identifier === formData.categoryIdentifier);
+        return selectedCategory?.subCategories || [];
     };
 
     if (loading) {
@@ -169,7 +169,6 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
 
     return (
         <div className="font-sans">
-            {/* Toast Notification */}
             {toast.show && (
                 <Toast
                     message={toast.message}
@@ -178,39 +177,9 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                 />
             )}
 
-            {/* Grid com 2 colunas */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                {/* Coluna 1 */}
                 <div className="space-y-4">
-                    {/* Main Category Selection */}
-                    <div className={`rounded-xl border-2 p-4 ${
-                        darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
-                    }`}>
-                        <span className={`text-xs font-bold mb-2 block font-heading ${
-                            darkMode ? 'text-white' : 'text-max-data'
-                        }`}>
-                            Seção *
-                        </span>
-                        <div className="grid grid-cols-3 gap-2">
-                            {categories?.mainCategories.map((category) => (
-                                <button
-                                    key={category.value}
-                                    onClick={() => handleMainCategoryChange(category.value)}
-                                    className={`p-2 rounded-lg border-2 transition-all font-medium text-sm ${
-                                        formData.mainCategory === category.value
-                                            ? 'bg-high-data border-high-data text-white'
-                                            : darkMode
-                                                ? 'border-gray-700 text-gray-400'
-                                                : 'border-gray-200 text-gray-600'
-                                    }`}
-                                >
-                                    {category.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Sub Category Selection */}
+                    {/* Category Selection */}
                     <div className={`rounded-xl border-2 p-4 ${
                         darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                     }`}>
@@ -219,19 +188,47 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                         }`}>
                             Categoria *
                         </span>
+                        <div className="grid grid-cols-3 gap-2">
+                            {categories.map((category) => (
+                                <button
+                                    key={category.identifier}
+                                    onClick={() => handleCategoryChange(category.identifier)}
+                                    className={`p-2 rounded-lg border-2 transition-all font-medium text-sm ${
+                                        formData.categoryIdentifier === category.identifier
+                                            ? 'bg-high-data border-high-data text-white'
+                                            : darkMode
+                                                ? 'border-gray-700 text-gray-400'
+                                                : 'border-gray-200 text-gray-600'
+                                    }`}
+                                >
+                                    {category.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* SubCategory Selection */}
+                    <div className={`rounded-xl border-2 p-4 ${
+                        darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
+                    }`}>
+                        <span className={`text-xs font-bold mb-2 block font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
+                        }`}>
+                            Subcategoria *
+                        </span>
                         <select
-                            value={formData.subCategory}
-                            onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
+                            value={formData.subCategoryIdentifier}
+                            onChange={(e) => setFormData({ ...formData, subCategoryIdentifier: e.target.value })}
                             className={`w-full p-2 text-sm rounded-lg border-2 outline-none transition-colors ${
                                 darkMode
                                     ? 'bg-[#1a1a1a] border-gray-700 text-white'
                                     : 'bg-white border-gray-200 text-gray-900'
                             }`}
                         >
-                            <option value="">Selecione uma categoria</option>
+                            <option value="">Selecione uma subcategoria</option>
                             {getCurrentSubCategories().map((subCat) => (
-                                <option key={subCat.value} value={subCat.value}>
-                                    {subCat.label}
+                                <option key={subCat.identifier} value={subCat.identifier}>
+                                    {subCat.name}
                                 </option>
                             ))}
                         </select>
@@ -295,7 +292,6 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                             </label>
                         </div>
 
-                        {/* Lista de arquivos */}
                         {formData.files.length > 0 && (
                             <div className="mt-3 space-y-2">
                                 {formData.files.map((file, index) => (
@@ -335,7 +331,7 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                     </div>
                 </div>
 
-                {/* Coluna 2 - Content (textarea grande) */}
+                {/* Content */}
                 <div className={`rounded-xl border-2 p-4 flex flex-col ${
                     darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
                 }`}>
@@ -359,15 +355,13 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
 
             {/* Action Buttons */}
             <div className="flex justify-between items-center">
-                <div className="flex justify-start">
-                    <button
-                        onClick={() => navigate('/')}
-                        disabled={submitting}
-                        className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white disabled:opacity-50"
-                    >
-                        Voltar
-                    </button>
-                </div>
+                <button
+                    onClick={() => navigate('/')}
+                    disabled={submitting}
+                    className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white disabled:opacity-50"
+                >
+                    Voltar
+                </button>
 
                 <button
                     onClick={handleSubmit}

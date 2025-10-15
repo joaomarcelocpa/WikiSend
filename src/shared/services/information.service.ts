@@ -1,6 +1,5 @@
 import { getAuthToken } from './login.service';
 import type {
-    CategoryHierarchyResponse,
     InformationCreateRequest,
     InformationCreateResponse,
     InformationViewResponse,
@@ -16,23 +15,6 @@ function getAuthHeaders(): HeadersInit {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
     };
-}
-
-export async function getCategories(): Promise<CategoryHierarchyResponse> {
-    try {
-        const response = await fetch(`${API_URL}/information/types/categories`, {
-            method: 'GET',
-            headers: getAuthHeaders(),
-        });
-
-        if (!response.ok) {
-            throw new Error('Erro ao buscar categorias');
-        }
-
-        return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
-    }
 }
 
 export async function createInformation(
@@ -51,8 +33,8 @@ export async function createInformation(
         }
 
         return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : 'Erro na conexão com o servidor');
     }
 }
 
@@ -68,17 +50,17 @@ export async function getAllInformation(): Promise<InformationViewResponse[]> {
         }
 
         return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : 'Erro na conexão com o servidor');
     }
 }
 
-export async function getInformationByMainCategory(
-    mainCategory: string
+export async function getInformationByCategory(
+    categoryIdentifier: string
 ): Promise<InformationViewResponse[]> {
     try {
         const response = await fetch(
-            `${API_URL}/information?mainCategory=${encodeURIComponent(mainCategory)}`,
+            `${API_URL}/information?categoryIdentifier=${encodeURIComponent(categoryIdentifier)}`,
             {
                 method: 'GET',
                 headers: getAuthHeaders(),
@@ -90,17 +72,17 @@ export async function getInformationByMainCategory(
         }
 
         return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : 'Erro na conexão com o servidor');
     }
 }
 
 export async function getInformationBySubCategory(
-    subCategory: string
+    subCategoryIdentifier: string
 ): Promise<InformationViewResponse[]> {
     try {
         const response = await fetch(
-            `${API_URL}/information?subCategory=${encodeURIComponent(subCategory)}`,
+            `${API_URL}/information?subCategoryIdentifier=${encodeURIComponent(subCategoryIdentifier)}`,
             {
                 method: 'GET',
                 headers: getAuthHeaders(),
@@ -112,8 +94,8 @@ export async function getInformationBySubCategory(
         }
 
         return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : 'Erro na conexão com o servidor');
     }
 }
 
@@ -131,8 +113,8 @@ export async function getInformationById(
         }
 
         return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : 'Erro na conexão com o servidor');
     }
 }
 
@@ -153,8 +135,8 @@ export async function updateInformation(
         }
 
         return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : 'Erro na conexão com o servidor');
     }
 }
 
@@ -172,7 +154,7 @@ export async function deleteInformation(
         }
 
         return await response.json();
-    } catch (error: string | unknown) {
-        throw new Error((error instanceof Error ? error.message : 'Erro na conexão com o servidor'));
+    } catch (error: unknown) {
+        throw new Error(error instanceof Error ? error.message : 'Erro na conexão com o servidor');
     }
 }
