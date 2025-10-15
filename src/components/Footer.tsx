@@ -10,7 +10,7 @@ const Footer = ({ darkMode }: FooterProps) => {
             <div className="w-full px-8 py-8">
                 <div className="text-center">
                     <p className="text-sm text-gray-500">
-                        © 2025 M2C Digital - Wiki Send - Todos os direitos reservados.
+                        © 2025 Wiki M2C Digital - Todos os direitos reservados.
                     </p>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import { FileText, Tag, BookOpen, Users, Edit } from 'lucide-react';
+import { FileText, Wrench, MessageSquare, MailOpen, Edit, FolderPlus, FolderEdit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from "../components/Footer.tsx";
@@ -12,10 +12,10 @@ const Home = ({ darkMode, setDarkMode }: HomeProps) => {
     const navigate = useNavigate();
 
     const stats = [
-        { label: 'Total de Informações', value: '128', colorClass: 'text-high-data', bgClass: 'bg-high-data/10', icon: BookOpen },
-        { label: 'Categorias', value: '24', colorClass: 'text-high-data', bgClass: 'bg-high-data/10', icon: Tag },
-        { label: 'Arquivos', value: '45', colorClass: 'text-mid-data', bgClass: 'bg-mid-data/10', icon: FileText },
-        { label: 'Colaboradores', value: '12', colorClass: 'text-low-data', bgClass: 'bg-low-data/10', icon: Users },
+        { label: 'Informações SMS', value: '128', colorClass: 'text-high-data', bgClass: 'bg-high-data/10', icon: MessageSquare },
+        { label: 'Informações Backoffice', value: '24', colorClass: 'text-high-data', bgClass: 'bg-high-data/10', icon: Wrench },
+        { label: 'Informações RCS', value: '45', colorClass: 'text-mid-data', bgClass: 'bg-mid-data/10', icon: FileText },
+        { label: 'Informações SMPP', value: '12', colorClass: 'text-low-data', bgClass: 'bg-low-data/10', icon: MailOpen },
     ];
 
     return (
@@ -68,45 +68,102 @@ const Home = ({ darkMode, setDarkMode }: HomeProps) => {
                         })}
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <button
-                            onClick={() => navigate('/register')}
-                            className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-high-data"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-high-data">
-                                    <FileText className="w-7 h-7 text-white" />
+                    {/* Informações Section */}
+                    <div className="mb-8">
+                        <h2 className={`text-2xl font-bold mb-4 font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
+                        }`}>
+                            Gerenciar Informações
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <button
+                                onClick={() => navigate('/register')}
+                                className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-high-data"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-high-data">
+                                        <FileText className="w-7 h-7 text-white" />
+                                    </div>
                                 </div>
-                            </div>
-                            <h3 className="text-2xl font-bold text-white mb-2 font-heading">
-                                Cadastrar Informação
-                            </h3>
-                            <p className="text-white/80 text-sm">
-                                Adicione novo conteúdo à base de conhecimento
-                            </p>
-                        </button>
+                                <h3 className="text-2xl font-bold text-white mb-2 font-heading">
+                                    Cadastrar Informação
+                                </h3>
+                                <p className="text-white/80 text-sm">
+                                    Adicione novo conteúdo à base de conhecimento
+                                </p>
+                            </button>
 
-                        <button
-                            onClick={() => navigate('/edit')}
-                            className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-low-data"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                                    darkMode ? 'bg-low-data' : 'bg-low-data'
-                                }`}>
-                                    <Edit className="w-7 h-7 text-max-data" />
+                            <button
+                                onClick={() => navigate('/edit')}
+                                className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-mid-data"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                                        darkMode ? 'bg-mid-data' : 'bg-mid-data'
+                                    }`}>
+                                        <Edit className="w-7 h-7 text-white" />
+                                    </div>
                                 </div>
-                            </div>
-                            <h3 className={`text-2xl font-bold mb-2 font-heading ${
-                                darkMode ? 'text-white' : 'text-max-data'
-                            }`}>
-                                Editar Informação
-                            </h3>
-                            <p className={`text-sm ${darkMode ? 'text-white' : 'text-gray-700'}`}>
-                                Busque e edite o conteúdo existente
-                            </p>
-                        </button>
+                                <h3 className={`text-2xl font-bold mb-2 font-heading ${
+                                    darkMode ? 'text-white' : 'text-white'
+                                }`}>
+                                    Gerenciar Informações
+                                </h3>
+                                <p className={`text-sm ${darkMode ? 'text-white' : 'text-white'}`}>
+                                    Busque e edite o conteúdo existente
+                                </p>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Categorias Section */}
+                    <div>
+                        <h2 className={`text-2xl font-bold mb-4 font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
+                        }`}>
+                            Gerenciar Categorias
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <button
+                                onClick={() => navigate('/register-category')}
+                                className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-mid-data"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-mid-data">
+                                        <FolderPlus className="w-7 h-7 text-white" />
+                                    </div>
+                                </div>
+                                <h3 className="text-2xl font-bold text-white mb-2 font-heading">
+                                    Cadastrar Categoria
+                                </h3>
+                                <p className="text-white/80 text-sm">
+                                    Crie novas categorias e subcategorias
+                                </p>
+                            </button>
+
+                            <button
+                                onClick={() => navigate('/edit-category')}
+                                className="group relative p-8 rounded-2xl border-2 border-mid-data text-left transition-all hover:shadow-2xl hover:scale-105 bg-high-data"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                                        darkMode ? 'bg-high-data' : 'bg-high-data'
+                                    }`}>
+                                        <FolderEdit className="w-7 h-7 text-white" />
+                                    </div>
+                                </div>
+                                <h3 className={`text-2xl font-bold mb-2 font-heading ${
+                                    darkMode ? 'text-white' : 'text-white'
+                                }`}>
+                                    Gerenciar Categorias
+                                </h3>
+                                <p className={`text-sm ${
+                                    darkMode ? 'text-white' : 'text-white'
+                                }`}>
+                                    Edite ou exclua categorias existentes
+                                </p>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
