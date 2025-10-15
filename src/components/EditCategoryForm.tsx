@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Plus, X } from 'lucide-react';
 import Toast from './Toast';
+import ConfirmDialog from './ConfirmDialog';
 import {
     getCategoryById,
     updateCategory,
@@ -24,6 +25,15 @@ const EditCategoryForm = ({ darkMode, editingId, onSuccess, onCancel }: EditCate
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<{
+        show: boolean;
+        subCategoryId: string | null;
+        subCategoryName: string | null;
+    }>({
+        show: false,
+        subCategoryId: null,
+        subCategoryName: null
+    });
 
     useEffect(() => {
         loadCategory();
@@ -92,20 +102,37 @@ const EditCategoryForm = ({ darkMode, editingId, onSuccess, onCancel }: EditCate
         }
     };
 
-    const handleDeleteSubCategory = async (subCategoryId: string) => {
-        if (!confirm('Tem certeza que deseja excluir esta subcategoria?')) {
-            return;
-        }
+    const handleDeleteSubCategory = (subCategoryId: string, subCategoryName: string) => {
+        setConfirmDelete({
+            show: true,
+            subCategoryId,
+            subCategoryName
+        });
+    };
+
+    const confirmDeleteSubCategory = async () => {
+        if (!confirmDelete.subCategoryId) return;
 
         try {
-            await deleteSubCategory(subCategoryId);
+            setLoading(true);
+            await deleteSubCategory(confirmDelete.subCategoryId);
             setToast({ message: 'Subcategoria excluída com sucesso!', type: 'success' });
+
+            setSubCategories(subCategories.filter(sub => sub.identifier !== confirmDelete.subCategoryId));
+
             await loadCategory();
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir subcategoria';
             setToast({ message: errorMessage, type: 'error' });
             console.error('Erro ao excluir subcategoria:', err);
+        } finally {
+            setLoading(false);
+            setConfirmDelete({ show: false, subCategoryId: null, subCategoryName: null });
         }
+    };
+
+    const cancelDeleteSubCategory = () => {
+        setConfirmDelete({ show: false, subCategoryId: null, subCategoryName: null });
     };
 
     if (loading) {
@@ -190,8 +217,10 @@ const EditCategoryForm = ({ darkMode, editingId, onSuccess, onCancel }: EditCate
                                         {subCat.name}
                                     </span>
                                     <button
-                                        onClick={() => handleDeleteSubCategory(subCat.identifier)}
-                                        className="p-1 hover:bg-red-500/10 rounded transition-colors"
+                                        onClick={() => handleDeleteSubCategory(subCat.identifier, subCat.name)}
+                                        disabled={loading}
+                                        className="p-1 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Excluir subcategoria"
                                     >
                                         <X className="w-4 h-4 text-red-500" />
                                     </button>
@@ -268,6 +297,20 @@ const EditCategoryForm = ({ darkMode, editingId, onSuccess, onCancel }: EditCate
                     message={toast.message}
                     type={toast.type}
                     onClose={() => setToast(null)}
+                />
+            )}
+
+            {/* Confirm Dialog */}
+            {confirmDelete.show && (
+                <ConfirmDialog
+                    title="Excluir Subcategoria"
+                    message={`Tem certeza que deseja excluir a subcategoria "${confirmDelete.subCategoryName}"? Esta ação não pode ser desfeita.`}
+                    confirmText="Sim, excluir"
+                    cancelText="Cancelar"
+                    onConfirm={confirmDeleteSubCategory}
+                    onCancel={cancelDeleteSubCategory}
+                    darkMode={darkMode}
+                    type="danger"
                 />
             )}
         </div>
