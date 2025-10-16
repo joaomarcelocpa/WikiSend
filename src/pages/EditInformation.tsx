@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar.tsx';
 import Footer from '../components/layout/Footer.tsx';
-import EditForm from '../components/information/EditForm.tsx';
+import EditInformationForm from '../components/information/EditInformationForm.tsx';
 import Toast from '../components/utils/Toast.tsx';
 import ConfirmDialog from '../components/utils/ConfirmDialog.tsx';
 import { getAllInformation, deleteInformation } from '../shared/services/information.service';
@@ -129,7 +129,7 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                         </p>
                     </div>
 
-                    <EditForm
+                    <EditInformationForm
                         darkMode={darkMode}
                         editingId={editingId}
                         onSuccess={handleEditSuccess}
@@ -268,11 +268,11 @@ const EditInformation = ({ darkMode, setDarkMode }: EditInformationProps) => {
                                             }`}>
                                                 {item.question}
                                             </h3>
-                                            <p className={`text-sm line-clamp-2 mb-2 ${
-                                                darkMode ? 'text-gray-400' : 'text-gray-600'
-                                            }`}>
-                                                {item.content}
-                                            </p>
+                                            {/*<p className={`text-sm line-clamp-2 mb-2 ${*/}
+                                            {/*    darkMode ? 'text-gray-400' : 'text-gray-600'*/}
+                                            {/*}`}>*/}
+                                            {/*    {item.content}*/}
+                                            {/*</p>*/}
                                             <div className="flex items-center gap-4 text-xs">
                                                 <span className={darkMode ? 'text-gray-500' : 'text-gray-500'}>
                                                     Criado em: {new Date(item.created_at).toLocaleDateString('pt-BR')}

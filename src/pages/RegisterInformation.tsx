@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar.tsx';
 import Footer from '../components/layout/Footer.tsx';
-import RegistrationForm from '../components/information/RegistrationForm.tsx';
+import RegisterInformationForm from '../components/information/RegisterInformationForm.tsx';
 
 interface RegisterInformationProps {
     darkMode: boolean;
@@ -29,7 +29,7 @@ const RegisterInformation = ({ darkMode, setDarkMode }: RegisterInformationProps
                     </p>
                 </div>
 
-                <RegistrationForm darkMode={darkMode} onBack={() => navigate('/')} />
+                <RegisterInformationForm darkMode={darkMode} onBack={() => navigate('/')} />
             </div>
 
             <Footer darkMode={darkMode} />

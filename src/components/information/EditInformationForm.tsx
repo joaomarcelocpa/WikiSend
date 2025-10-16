@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save } from 'lucide-react';
+import { Save, Upload, X } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -28,6 +28,7 @@ interface FormData {
     question: string;
     content: string;
     file_identifier?: number;
+    files: File[];
 }
 
 // Componente da barra de ferramentas do editor
@@ -190,13 +191,14 @@ const EditorMenuBar = ({ editor, darkMode }: { editor: any; darkMode: boolean })
     );
 };
 
-const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) => {
+const EditInformationForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) => {
     const [formData, setFormData] = useState<FormData>({
         category_identifier: '',
         sub_category_identifier: '',
         question: '',
         content: '',
         file_identifier: undefined,
+        files: [],
     });
     const [categories, setCategories] = useState<CategoryViewResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -245,6 +247,7 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
                 question: informationData.question,
                 content: informationData.content,
                 file_identifier: informationData.file_identifier,
+                files: [],
             });
 
             // Carrega o conteúdo no editor
@@ -269,6 +272,31 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
             editor.commands.setContent(formData.content);
         }
     }, [editor, loading]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = e.target.files;
+        if (selectedFiles) {
+            const filesArray = Array.from(selectedFiles);
+            const validFiles = filesArray.filter(file =>
+                file.type === 'application/pdf' ||
+                file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                file.type === 'application/msword'
+            );
+
+            if (validFiles.length !== filesArray.length) {
+                setToast({
+                    message: 'Alguns arquivos foram ignorados. Apenas PDF e DOCX são permitidos.',
+                    type: 'warning'
+                });
+            }
+
+            setFormData({ ...formData, files: [...formData.files, ...validFiles] });
+        }
+    };
+
+    const handleRemoveFile = (index: number) => {
+        setFormData({ ...formData, files: formData.files.filter((_, i) => i !== index) });
+    };
 
     const handleSubmit = async () => {
         if (!formData.question.trim()) {
@@ -425,7 +453,7 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
                         <span className={`text-xs font-bold mb-2 block font-heading ${
                             darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            Pergunta *
+                            Subtópico/Pergunta *
                         </span>
                         <input
                             type="text"
@@ -441,35 +469,111 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
                         />
                     </div>
 
-                    {/* Current File Info */}
-                    {currentFile && (
-                        <div className={`rounded-xl border-2 p-4 ${
-                            darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
+                    {/* File Upload */}
+                    <div className={`rounded-xl border-2 p-4 ${
+                        darkMode ? 'bg-[#1f1f1f] border-gray-700' : 'bg-white border-gray-200'
+                    }`}>
+                        <span className={`text-xs font-bold mb-2 block font-heading ${
+                            darkMode ? 'text-white' : 'text-max-data'
                         }`}>
-                            <span className={`text-xs font-bold mb-2 block font-heading ${
-                                darkMode ? 'text-white' : 'text-max-data'
-                            }`}>
-                                Arquivo Atual
-                            </span>
-                            <div className={`flex items-center gap-2 p-2 rounded-lg ${
-                                darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'
-                            }`}>
-                                <div className="w-8 h-8 rounded flex items-center justify-center bg-mid-data/10 flex-shrink-0">
-                                    <span className="text-xs font-bold text-mid-data">
-                                        {currentFile.split('.').pop()?.toUpperCase()}
-                                    </span>
-                                </div>
-                                <p className={`text-xs font-medium flex-1 ${
-                                    darkMode ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                    {currentFile}
+                            Arquivos (Opcional)
+                        </span>
+
+                        {/* Current File Display */}
+                        {currentFile && (
+                            <div className="mb-3">
+                                <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    Arquivo atual:
                                 </p>
+                                <div className={`flex items-center gap-2 p-2 rounded-lg ${
+                                    darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'
+                                }`}>
+                                    <div className="w-8 h-8 rounded flex items-center justify-center bg-mid-data/10 flex-shrink-0">
+                                        <span className="text-xs font-bold text-mid-data">
+                                            {currentFile.split('.').pop()?.toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <p className={`text-xs font-medium flex-1 ${
+                                        darkMode ? 'text-white' : 'text-gray-900'
+                                    }`}>
+                                        {currentFile}
+                                    </p>
+                                </div>
                             </div>
-                            <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                Nota: A atualização de arquivos não está disponível nesta versão.
-                            </p>
+                        )}
+
+                        <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                            darkMode
+                                ? 'border-gray-700 hover:border-gray-600'
+                                : 'border-gray-300 hover:border-gray-400'
+                        }`}>
+                            <input
+                                type="file"
+                                id="file-upload-edit"
+                                multiple
+                                accept=".pdf,.doc,.docx"
+                                onChange={handleFileChange}
+                                className="hidden"
+                                disabled={submitting}
+                            />
+                            <label
+                                htmlFor="file-upload-edit"
+                                className={`cursor-pointer flex flex-col items-center gap-2 ${
+                                    submitting ? 'opacity-50 pointer-events-none' : ''
+                                }`}
+                            >
+                                <Upload className={`w-8 h-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    Clique ou arraste arquivos
+                                </span>
+                                <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                    PDF ou DOCX (máx 10MB)
+                                </span>
+                            </label>
                         </div>
-                    )}
+
+                        {formData.files.length > 0 && (
+                            <div className="mt-3 space-y-2">
+                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    Novos arquivos:
+                                </p>
+                                {formData.files.map((file, index) => (
+                                    <div
+                                        key={index}
+                                        className={`flex items-center justify-between p-2 rounded-lg ${
+                                            darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <div className="w-8 h-8 rounded flex items-center justify-center bg-mid-data/10 flex-shrink-0">
+                                                <span className="text-xs font-bold text-mid-data">
+                                                    {file.name.split('.').pop()?.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-xs font-medium truncate ${
+                                                    darkMode ? 'text-white' : 'text-gray-900'
+                                                }`}>
+                                                    {file.name}
+                                                </p>
+                                                <p className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveFile(index)}
+                                            disabled={submitting}
+                                            className="p-1 hover:bg-red-500/10 rounded transition-colors flex-shrink-0 disabled:opacity-50"
+                                        >
+                                            <X className="w-4 h-4 text-red-500" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Content with Tiptap Editor */}
@@ -491,7 +595,7 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
                     }`}>
                         <EditorContent
                             editor={editor}
-                            className={`tiptap-editor p-4 min-h-[400px] ${
+                            className={`p-4 min-h-[400px] ${
                                 darkMode ? 'text-white' : 'text-gray-900'
                             }`}
                         />
@@ -504,7 +608,7 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
                 <button
                     onClick={onCancel}
                     disabled={submitting}
-                    className="px-8 py-3 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white disabled:opacity-50"
+                    className="px-6 py-2 rounded-xl font-medium transition-all hover:opacity-80 bg-high-data text-white disabled:opacity-50"
                 >
                     Cancelar
                 </button>
@@ -540,4 +644,4 @@ const EditForm = ({ darkMode, editingId, onSuccess, onCancel }: EditFormProps) =
     );
 };
 
-export default EditForm;
+export default EditInformationForm;

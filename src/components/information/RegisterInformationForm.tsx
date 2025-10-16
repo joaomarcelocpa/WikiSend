@@ -31,7 +31,6 @@ interface ToastState {
     type: 'success' | 'error' | 'warning';
 }
 
-// Componente da barra de ferramentas do editor
 const EditorMenuBar = ({ editor, darkMode }: { editor: any; darkMode: boolean }) => {
     if (!editor) return null;
 
@@ -191,7 +190,7 @@ const EditorMenuBar = ({ editor, darkMode }: { editor: any; darkMode: boolean })
     );
 };
 
-const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
+const RegisterInformationForm = ({ darkMode }: RegistrationFormProps) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
         categoryIdentifier: '',
@@ -338,8 +337,8 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
                 files: [],
             });
 
-        } catch (error: any) {
-            const errorMessage = error.message || 'Ocorreu um erro ao salvar a informação. Tente novamente.';
+        } catch (error: string | unknown) {
+            const errorMessage = (error instanceof Error && error.message) ? error.message : 'Ocorreu um erro ao salvar a informação. Tente novamente.';
             showToast(errorMessage, 'error');
         } finally {
             setSubmitting(false);
@@ -580,4 +579,4 @@ const RegistrationForm = ({ darkMode }: RegistrationFormProps) => {
     );
 };
 
-export default RegistrationForm;
+export default RegisterInformationForm;
